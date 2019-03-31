@@ -50,22 +50,21 @@ namespace rhex_dart {
 
         void update(double t)
         {
-            //auto angles = _controller.pos(t);
-           // std::cout<<"5"<<std::endl;
+            //gets target positions as a vector of doubles
             auto inter = _controller.pos(t);
-            //std::cout<<inter[0]<<" "<<inter[1]<<" "<<inter[2]<<" "<<inter[3]<<" "<<inter[4]<<" "<<inter[5]<<std::endl;
+            //initialised the target positions vector as all zeros
             _target_positions=Eigen::VectorXd::Zero(inter.size()+6);
-           // std::cout<<"5"<<std::endl;
+            //sets the first 6 DoF to be 0 and then updates the remaining target positions with the ones from the controller
             for(int i=0; i<(inter.size()+6) ; i++){
                 if(i<6){
                     _target_positions[i]=0;
                 }
                 else{
                     _target_positions[i]=inter[i-6];
-                    //std::cout<<inter[i]<<std::endl;
+                    
                 }
             }
-           // std::cout<<_target_positions[6]<<" "<<_target_positions[7]<<" "<<_target_positions[8]<<" "<<_target_positions[9]<<" "<<_target_positions[10]<<" "<<_target_positions[11]<<std::endl;
+           
             set_commands();
         }
 
@@ -73,22 +72,19 @@ namespace rhex_dart {
         {
             if (_robot == nullptr)
                 return;
-           // std::cout<<"7"<<std::endl;
 
             Eigen::VectorXd q = _robot->skeleton()->getPositions();
             Eigen::VectorXd dq = _robot->skeleton()->getVelocities();
+            //values of q exceed 2*PI this normalises them in te range 0-2*PI
             for(int i=0; i< q.size() ; i++){
                 q[i] = (remainder(q[i],double(2*3.1415))<0)? remainder(q[i],double(2*3.1415))+ 2*3.1415: remainder(q[i],double(2*3.1415));
             }
-           // std::cout<<"7"<<std::endl;
-            //std::cout<<q[6]<<" "<<q[7]<<" "<<q[8]<<" "<<q[9]<<" "<<q[10]<<" "<<q[11]<<std::endl;
-           // std::cout<<dq[6]<<" "<<dq[7]<<" "<<dq[8]<<" "<<dq[9]<<" "<<dq[10]<<" "<<dq[11]<<std::endl;
-           // Eigen::VectorXd q_err = _target_positions - q;
+
             get_PD();
-           // std::cout<<_K_d[6]<<" "<<_K_d[7]<<" "<<_K_d[8]<<" "<<_K_d[9]<<" "<<_K_d[10]<<" "<<_K_d[11]<<std::endl;
-            //std::cout<<_K_p[6]<<" "<<_K_p[7]<<" "<<_K_p[8]<<" "<<_K_p[9]<<" "<<_K_p[10]<<" "<<_K_p[11]<<std::endl;            
-           // std::cout<<_K_d.size()<<" "<<_K_p.size()<<" "<<_target_positions.size()<<" "<<q.size()<<" "<<dq.size()<<std::endl;
-          //  Eigen::VectorXd commands = _K_p.array() * (_target_positions.array() - q.array()) - _K_d.array() * dq.array();
+
+            // depending on where my target is and where the robot is at i want the differences to be configured differenty
+            // if my target position is 6 whereas my current position is 0.5 there is no point going rotating forward fast 
+            // it would be preferec to have a negative diffreence and head towards the target position.
             double diff;
             Eigen::VectorXd commands = Eigen::VectorXd::Zero(54);
             for (int i=0 ; i<54 ; i++){
@@ -99,18 +95,14 @@ namespace rhex_dart {
                 }else{
                     diff = _target_positions[i]-q[i];
                 }
+                //makes sure a torque larger than 3 is not applied
                 commands[i] = (_K_p[i]*(diff)>3)?3:_K_p[i]*(diff);
                 commands[i] = (commands[i]<-3)?-3:commands[i];
             }
-           // std::cout<<commands[6]<<" "<<commands[7]<<" "<<commands[8]<<" "<<commands[9]<<" "<<commands[10]<<" "<<commands[11]<<std::endl;
-           // std::cout<<"7"<<std::endl;
-           // Eigen::VectorXd vel = q_err * gain;
-           // vel = vel.cwiseProduct(_p);
 
+
+            //updates the robot with the new forces for the joints
             _robot->skeleton()->setCommands(commands);
-           // std::cout<<"----------------"<<std::endl;
-         //   std::cout<<commands<< " " << _target_positions<<std::endl;
-           // std::cout<<"----------------"<<std::endl;
         }
 
         void get_PD(){

@@ -18,30 +18,13 @@ struct Params {
 
 int main()
 {
+    //using the same model as the hexapod and so the robot has a damages parameter but is set to 0
     std::vector<rhex_dart::RhexDamage> brk = {};
-    // Examples of leg damages
-    // rhex_dart::RhexDamage dmg;
-    // dmg.type = "leg_shortening";
-    // dmg.data = "2";
-    // brk.push_back(dmg);
-    // dmg.type = "leg_removal";
-    // dmg.data = "2";
-    // brk.push_back(dmg);
-    // dmg.type = "blocked_joint";
-    // dmg.data = "body_leg_1";
-    // dmg.extra = new double(1.0);
-    // brk.push_back(dmg);
-    // dmg.type = "blocked_joint";
-    // dmg.data = "leg_1_1_2";
-    // dmg.extra = nullptr;
-    // brk.push_back(dmg);
-    // dmg.type = "blocked_joint";
-    // dmg.data = "leg_1_2_3";
-    // brk.push_back(dmg);
 
+    //loads the robot with name Rhex tels it that it is not a URDF file and give it the blank damages
     auto global_robot = std::make_shared<rhex_dart::Rhex>("RHex8.skel","Rhex",false,brk);
 
-
+    // sets the control vector up
     std::vector<double> ctrl = {0.5, 0.95, 0.5, 0.95, 0.5, 0.9, 0.1, 5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
     // ctrl = {1, 0.85, 0.95, 1, 0.35, 0.2, 0.85, 0.05, 0.3, 0.95, 0.85, 0.4, 0.8, 0.55, 0.15, 0.25, 0.15, 0.85, 0.85, 0.85, 0.6, 0.5, 0.95, 0.05, 1, 0.25, 0.8, 0.75, 0.9, 0.3, 0.95, 0.3, 0.3, 0.65, 0.7, 0.75};
@@ -58,22 +41,9 @@ int main()
 #ifdef GRAPHIC
     simu.fixed_camera(Eigen::Vector3d(0, 1, 5));
 #endif
-    //std::cout<<"1"<<std::endl;
-    //Eigen::Vector6d p;
-    //p << 0, 0, 0, 1, -1, 0.15;
-    //simu.add_box(p, Eigen::Vector3d(0.3, 0.3, 0.3));
-    //p << 0, 0, 0, 1, 1, 0;
-    //simu.add_ellipsoid(p, Eigen::Vector3d(0.3, 0.3, 0.3), "fixed");
-    
-    // for(int i=0;i<167;i++)
-    //     simu.run(0.015, true);
 
-    // ctrl = {1.0, 0.55, 0.45, 0.9, 0.6, 0.15, 0.95, 0.65, 0.15, 0.25, 0.85, 0.35, 1.0, 0.2, 0.6, 0.5, 0.05, 0.6, 1.0, 1.0, 0.4, 0.9, 0.75, 0.3, 1.0, 0.7, 0.55, 0.8, 0.25, 0.3, 1.0, 0.15, 0.3, 0.1, 0.4, 1.0};
-    // ctrl = {0.75, 1.0, 0.8, 0.8, 0.1, 0.95, 0.7, 0.2, 0.35, 0.85, 0.85, 0.95, 0.7, 1.0, 0.8, 0.7, 0.2, 1.0, 1.0, 0.7, 0.45, 0.15, 0.15, 0.75, 1.0, 0.15, 0.5, 0.1, 0.5, 0.85, 0.25, 0.1, 0.9, 0.2, 0.9, 0.9};
-    // simu.controller().set_parameters(ctrl);
     simu.run(5);
-    //std::cout<<"1"<<std::endl;
-    std::cout << simu.covered_distance() << " " << simu.arrival_angle() << std::endl;
+    std::cout << simu.covered_distance() << " " << simu.arrival_angle() << " "<<simu.body_avg_height()<<std::endl;
     std::cout << simu.energy() << std::endl;
     std::vector<double> v;
     simu.get_descriptor<rhex_dart::descriptors::DutyCycle>(v);

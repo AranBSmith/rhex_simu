@@ -8,7 +8,7 @@
 #include <boost/fusion/include/find.hpp>
 
 #include <dart/dart.hpp>
-#include <dart/collision/bullet/BulletCollisionDetector.hpp>
+#include <dart/collision/dart/DARTCollisionDetector.hpp>
 #include <Eigen/Core>
 #include <rhex_dart/rhex.hpp>
 #include <rhex_dart/rhex_control.hpp>
@@ -75,30 +75,23 @@ namespace rhex_dart {
                                                                           _desc_period(2),
                                                                           _break(false)
         {
-            _world->getConstraintSolver()->setCollisionDetector(dart::collision::BulletCollisionDetector::create());
+            _world->getConstraintSolver()->setCollisionDetector(dart::collision::DARTCollisionDetector::create());
             _robot = robot;
 
             // set position of rhex
             _robot->skeleton()->setPosition(6, 0.4);
-            //std::cout<<_robot->pos()<<std::endl;
-            //std::cout<<"hhhhhhhhh"<<std::endl;
             _add_floor();
 
             _world->addSkeleton(_robot->skeleton());
-            //_robot->skeleton()->getJoint(0)->
             _world->setTimeStep(0.005);
 
 
             std::vector<double> c_tmp(36, 0.0);
 
             _controller.set_parameters(c_tmp);
-          //  std::cout<<"2"<<std::endl;
             _stabilize_robot(true);
-            //std::cout<<"2"<<std::endl;
             _world->setTime(0.0);
-            //std::cout<<"2"<<std::endl;
             _controller.set_parameters(ctrl);
-          //  std::cout<<"2"<<std::endl;
 
 
 #ifdef GRAPHIC
@@ -142,11 +135,7 @@ namespace rhex_dart {
                 _energy += state.sum();
                 
 
-                // update safety measures
-                //boost::fusion::for_each(_safety_measures, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
-                // update visualizations
-                //boost::fusion::for_each(_visualizations, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
-                //std::cout<<rob->pos()<<std::endl;
+
 
                 if (_break) {
                     _covered_distance = -10002.0;
@@ -173,6 +162,7 @@ namespace rhex_dart {
                 }
 
                 ++index;
+                _body_avg_height += rob->pos()[2];
             }
             _old_index = index;
 
@@ -185,27 +175,10 @@ namespace rhex_dart {
                 }
             }
             Eigen::Vector3d fin_pos = rob->pos();
+
+            // updates values of covered dstance average body height and arrival angle
             _covered_distance = fin_pos[0]-init_pos[0];
-
-            // Position computation
-           /* Eigen::Vector6d pose = rob->pose();
-            Eigen::Matrix3d rot = dart::math::expMapRot({pose[0], pose[1], pose[2]});
-            Eigen::Matrix3d init_rot = dart::math::expMapRot({init_trans[0], init_trans[1], init_trans[2]});
-            Eigen::MatrixXd init_homogeneous(4, 4);
-            init_homogeneous << init_rot(0, 0), init_rot(0, 1), init_rot(0, 2), init_trans[3], init_rot(1, 0), init_rot(1, 1), init_rot(1, 2), init_trans[4], init_rot(2, 0), init_rot(2, 1), init_rot(2, 2), init_trans[5], 0, 0, 0, 1;
-            Eigen::MatrixXd final_homogeneous(4, 4);
-            final_homogeneous << rot(0, 0), rot(0, 1), rot(0, 2), pose[3], rot(1, 0), rot(1, 1), rot(1, 2), pose[4], rot(2, 0), rot(2, 1), rot(2, 2), pose[5], 0, 0, 0, 1;
-            Eigen::Vector4d pos = {init_trans[3], init_trans[4], init_trans[5], 1.0};
-            pos = init_homogeneous.inverse() * final_homogeneous * pos;
-*/
-            //_final_pos = Eigen::Vector3d(pos(0), pos(1), pos(2));
-
-            //_covered_distance = std::round(_final_pos(0) * 100) / 100.0;
-
-            // Angle computation
-         //   _final_rot = dart::math::matrixToEulerXYZ(init_rot.inverse() * rot);
-
-            // roll-pitch-yaw
+            _body_avg_height = (chain)?_body_avg_height/(_world->getTime()-old_t):_world->getTime();
             _arrival_angle = std::round(atan((fin_pos[1]-init_pos[1])/(_covered_distance)) * 100) / 100.0;
         }
 
@@ -247,6 +220,11 @@ namespace rhex_dart {
         }
 
         double covered_distance() const
+        {
+            return _covered_distance;
+        }
+
+        double body_avg_height() const
         {
             return _covered_distance;
         }
@@ -471,6 +449,7 @@ namespace rhex_dart {
         double _arrival_angle;
         double _covered_distance;
         double _energy;
+        double _body_avg_height;
         dart::simulation::WorldPtr _world;
         rhex_control_t _controller;
         size_t _old_index;
