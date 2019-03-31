@@ -1,21 +1,9 @@
 # hexapod_simu
 
-#### This repo contains all the available simulator integrations for our hexapods.
 
-## Authors
+### rhex_dart
 
-- Author/Maintainer: Konstantinos Chatzilygeroudis
-- Other contributors: Dorian Goepp, Jean-Baptiste Mouret, Antoine Cully
-
-## Packages
-
-### hexapod_robdyn
-
-Here we keep the [robdyn] integration for our hexapods.
-
-### hexapod_dart
-
-Here we keep the [DART] integration for our hexapods.
+Here we keep the [DART] integration for our rhex.
 
 ## LICENSE
 
