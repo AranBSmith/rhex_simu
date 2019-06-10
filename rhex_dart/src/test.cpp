@@ -47,12 +47,17 @@ int main()
     std::cout << simu.energy() << std::endl;
     std::vector<double> v;
     simu.get_descriptor<rhex_dart::descriptors::DutyCycle>(v);
+	
+	std::cout << "Duty Cycle:" << std::endl;
     for (size_t i = 0; i < v.size(); i++) {
         std::cout << v[i] << " ";
     }
+    
     std::cout << std::endl;
     std::vector<double> vv;
     simu.get_descriptor<rhex_dart::descriptors::BodyOrientation>(vv);
+    
+    std::cout << "Body Orientation" << std::endl;
     for (size_t i = 0; i < vv.size(); i++) {
         std::cout << vv[i] << " ";
     }

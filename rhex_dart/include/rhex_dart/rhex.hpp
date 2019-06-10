@@ -32,7 +32,6 @@ namespace rhex_dart {
         {
             assert(_skeleton != nullptr);
             _set_damages(damages);
-            //std::cout<<"boobs"<<std::endl;
 
             // Set all coefficients to default values
             set_friction_coeff();
@@ -225,6 +224,7 @@ namespace rhex_dart {
                     for (size_t i = 0; i < dmg.data.size(); i++) {
                         int l = dmg.data[i] - '0';
                         _broken_legs.push_back(l);
+
                         std::string leg_bd_name = "leg_" + std::string(1, dmg.data[i]) + "_1";
                         auto bd = _skeleton->getBodyNode(leg_bd_name);
                         bd->removeAllShapeNodes();

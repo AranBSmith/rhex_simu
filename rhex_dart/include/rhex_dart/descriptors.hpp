@@ -44,7 +44,7 @@ namespace rhex_dart {
             {
                 const dart::collision::CollisionResult& col_res = simu.world()->getLastCollisionResult();
                 for (size_t i = 0; i < 6; ++i) {
-                    std::string leg_name = "leg_" + std::to_string(i) + "_3";
+                    std::string leg_name = "leg_" + std::to_string(i) + "_8";
                     dart::dynamics::BodyNodePtr body_to_check = rob->skeleton()->getBodyNode(leg_name);
 
                     if (rob->is_broken(i)) {
