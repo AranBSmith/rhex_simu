@@ -17,7 +17,6 @@ namespace rhex_dart {
             _target_positions = _robot->skeleton()->getPositions();
 
             size_t dof = _robot->skeleton()->getNumDofs();
-
             _p = Eigen::VectorXd::Zero(dof);
 
             // first 6 DOF are 6d position - we don't want to put P values there
@@ -70,11 +69,14 @@ namespace rhex_dart {
 
         void set_commands()
         {
+
             if (_robot == nullptr)
                 return;
 
             Eigen::VectorXd q = _robot->skeleton()->getPositions();
+
             Eigen::VectorXd dq = _robot->skeleton()->getVelocities();
+
             //values of q exceed 2*PI this normalises them in te range 0-2*PI
             for(int i=0; i< q.size() ; i++){
                 q[i] = (remainder(q[i],double(2*3.1415))<0)? remainder(q[i],double(2*3.1415))+ 2*3.1415: remainder(q[i],double(2*3.1415));
@@ -86,8 +88,10 @@ namespace rhex_dart {
             // if my target position is 6 whereas my current position is 0.5 there is no point going rotating forward fast 
             // it would be preferec to have a negative diffreence and head towards the target position.
             double diff;
-            Eigen::VectorXd commands = Eigen::VectorXd::Zero(54);
-            for (int i=0 ; i<54 ; i++){
+			size_t dof = _robot->skeleton()->getNumDofs();
+            Eigen::VectorXd commands = Eigen::VectorXd::Zero(dof);
+
+            for (int i=0 ; i<dof ; i++){
                 if(_target_positions[i]-q[i] > 3.1415){
                     diff = (_target_positions[i]-q[i])-2*3.1415;
                 }else if(_target_positions[i]-q[i]<-3.1415){
@@ -99,7 +103,6 @@ namespace rhex_dart {
                 commands[i] = (_K_p[i]*(diff)>3)?3:_K_p[i]*(diff);
                 commands[i] = (commands[i]<-3)?-3:commands[i];
             }
-
 
             //updates the robot with the new forces for the joints
             _robot->skeleton()->setCommands(commands);

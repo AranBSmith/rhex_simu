@@ -217,7 +217,6 @@ namespace rhex_dart {
         void _set_damages(const std::vector<RhexDamage>& damages)
         {
             _broken_legs.clear();
-
             _damages = damages;
             for (auto dmg : _damages) {
                 if (dmg.type == "leg_removal") {

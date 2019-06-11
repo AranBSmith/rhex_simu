@@ -1,5 +1,5 @@
-#ifndef HEXAPOD_DART_SIMU_HPP
-#define HEXAPOD_DART_SIMU_HPP
+#ifndef RHEX_DART_SIMU_HPP
+#define RHEX_DART_SIMU_HPP
 
 #include <boost/parameter.hpp>
 #include <boost/fusion/include/vector.hpp>
@@ -75,9 +75,9 @@ namespace rhex_dart {
                                                                           _desc_period(2),
                                                                           _break(false)
         {
+
             _world->getConstraintSolver()->setCollisionDetector(dart::collision::DARTCollisionDetector::create());
             _robot = robot;
-
             // set position of rhex
             _robot->skeleton()->setPosition(6, 0.4);
             _add_floor();
@@ -85,20 +85,21 @@ namespace rhex_dart {
             _world->addSkeleton(_robot->skeleton());
             _world->setTimeStep(0.005);
 
-
+			//TODO
             std::vector<double> c_tmp(36, 0.0);
-
             _controller.set_parameters(c_tmp);
             _stabilize_robot(true);
             _world->setTime(0.0);
             _controller.set_parameters(ctrl);
 
 
+
 #ifdef GRAPHIC
             _fixed_camera = false;
             _osg_world_node = new dart::gui::osg::WorldNode(_world);
             _osg_viewer.addWorldNode(_osg_world_node);
-            _osg_viewer.setUpViewInWindow(0, 0, 640, 480);
+			_osg_viewer.setUpViewInWindow(0, 0, 640, 480);
+
 // full-screen
 // _osg_viewer.setUpViewOnSingleScreen();
 #endif
@@ -379,39 +380,29 @@ namespace rhex_dart {
         bool _stabilize_robot(bool update_ctrl = false)
         {
             robot_t rob = this->robot();
-
             bool stabilized = false;
             int stab = 0;
-
             if (update_ctrl)
                 _world->setTimeStep(0.001);
 
             for (size_t s = 0; s < 1000 && !stabilized; ++s) {
                 Eigen::Vector6d prev_pose = rob->pose();
 
-
                 if (update_ctrl){
-                   // std::cout<<"4"<<std::endl;
                     _controller.update(_world->getTime());
-                   // std::cout<<"4"<<std::endl;
-                }else
+                }else{
                     _controller.set_commands();
+		}
                 _world->step();
-                //std::cout<<"4"<<std::endl;
-
                 if ((rob->pose() - prev_pose).norm() < 1e-4)
                     stab++;
                 else
                     stab = 0;
                 if (stab > 30)
                     stabilized = true;
-                //std::cout<<"4"<<std::endl;
             }
-            //std::cout<<"4"<<std::endl;
-
             if (update_ctrl)
                 _world->setTimeStep(0.015);
-
             return stabilized;
         }
 
