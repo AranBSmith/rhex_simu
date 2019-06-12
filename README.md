@@ -1,4 +1,4 @@
-# hexapod_simu
+# rhex_simu
 
 
 ### rhex_dart
