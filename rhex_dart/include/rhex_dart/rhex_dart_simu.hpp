@@ -424,7 +424,7 @@ namespace rhex_dart {
             auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(floor_width, floor_width, floor_height));
             auto box_node = body->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
             //std::cout<<"3"<<std::endl;
-            //box_node->getVisualAspect()->setColor(dart::Color::Red());
+            box_node->getVisualAspect()->setColor(dart::Color::Red());
             //std::cout<<"3"<<std::endl;
             // Put the body into position
             Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());

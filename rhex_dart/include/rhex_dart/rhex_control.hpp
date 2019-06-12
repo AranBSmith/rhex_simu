@@ -88,7 +88,7 @@ namespace rhex_dart {
             // if my target position is 6 whereas my current position is 0.5 there is no point going rotating forward fast 
             // it would be preferec to have a negative diffreence and head towards the target position.
             double diff;
-			size_t dof = _robot->skeleton()->getNumDofs();
+	    size_t dof = _robot->skeleton()->getNumDofs();
             Eigen::VectorXd commands = Eigen::VectorXd::Zero(dof);
 
             for (int i=0 ; i<dof ; i++){
