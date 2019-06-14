@@ -45,7 +45,7 @@ int main()
     simu.follow_rhex();
 #endif
 
-    simu.run(5);
+    simu.run(10);
     std::cout << simu.covered_distance() << " " << simu.arrival_angle() << " "<<simu.body_avg_height()<<std::endl;
     std::cout << simu.energy() << std::endl;
     std::vector<double> v;

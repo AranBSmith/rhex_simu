@@ -92,13 +92,15 @@ namespace rhex_dart {
             _world->setTime(0.0);
             _controller.set_parameters(ctrl);
 
-
+            auto gravity = _world->getGravity();
+            // std::cout << gravity << std::endl;
 
 #ifdef GRAPHIC
             _fixed_camera = false;
             _osg_world_node = new dart::gui::osg::WorldNode(_world);
             _osg_viewer.addWorldNode(_osg_world_node);
 			_osg_viewer.setUpViewInWindow(0, 0, 640, 480);
+
 
 // full-screen
 // _osg_viewer.setUpViewOnSingleScreen();
@@ -413,7 +415,6 @@ namespace rhex_dart {
                 return;
 
             dart::dynamics::SkeletonPtr floor = dart::dynamics::Skeleton::create("floor");
-            
 
             // Give the floor a body
             dart::dynamics::BodyNodePtr body = floor->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;

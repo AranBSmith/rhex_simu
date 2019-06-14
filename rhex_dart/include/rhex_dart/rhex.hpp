@@ -176,6 +176,11 @@ namespace rhex_dart {
                         dart::simulation::WorldPtr world = dart::utils::SkelParser::readWorld(model_file);
                         tmp_skel = world->getSkeleton(_robot_name);
                     }
+
+                    std::cout << "Enforcing positions" << std::endl;
+                    for (size_t i = 0; i < tmp_skel->getNumJoints(); ++i) {
+                        tmp_skel->getJoint(i)->setPositionLimitEnforced(true);
+                    }
                 }
                 else
                     return nullptr;
