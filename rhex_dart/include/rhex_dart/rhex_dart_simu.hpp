@@ -52,7 +52,7 @@ namespace rhex_dart {
         // defaults
         struct defaults {
             using rhex_control_t = RhexControl;
-            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight>;
+            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };
@@ -91,9 +91,6 @@ namespace rhex_dart {
             _stabilize_robot(true);
             _world->setTime(0.0);
             _controller.set_parameters(ctrl);
-
-            auto gravity = _world->getGravity();
-            // std::cout << gravity << std::endl;
 
 #ifdef GRAPHIC
             _fixed_camera = false;
@@ -137,7 +134,8 @@ namespace rhex_dart {
                 Eigen::VectorXd state = rob->skeleton()->getForces().array().abs() * _world->getTimeStep();
                 _energy += state.sum();
                 
-
+                // update safety measures
+                boost::fusion::for_each(_safety_measures, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
 
 
                 if (_break) {
@@ -424,9 +422,8 @@ namespace rhex_dart {
             double floor_height = 0.1;
             auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(floor_width, floor_width, floor_height));
             auto box_node = body->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
-            //std::cout<<"3"<<std::endl;
             box_node->getVisualAspect()->setColor(dart::Color::Red());
-            //std::cout<<"3"<<std::endl;
+
             // Put the body into position
             Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
             tf.translation() = Eigen::Vector3d(0.0, 0.0, -floor_height / 2.0);

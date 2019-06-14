@@ -22,7 +22,7 @@ int main()
     std::vector<rhex_dart::RhexDamage> brk = {};
 
     //loads the robot with name Rhex tels it that it is not a URDF file and give it the blank damages
-    auto global_robot = std::make_shared<rhex_dart::Rhex>("RHex8.skel", "Rhex", false, brk);
+    auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/URDF/RHex8.skel", "Rhex", false, brk);
 
     // sets the control vector up
     std::vector<double> ctrl = {0.5, 0.95, 0.5, 0.95, 0.5, 0.9, 0.1, 5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
