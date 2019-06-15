@@ -52,7 +52,7 @@ namespace rhex_dart {
         // defaults
         struct defaults {
             using rhex_control_t = RhexControl;
-            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
+            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };

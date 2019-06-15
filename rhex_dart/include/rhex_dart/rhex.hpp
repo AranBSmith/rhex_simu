@@ -236,40 +236,43 @@ namespace rhex_dart {
                     }
                 }
                 else if (dmg.type == "leg_shortening") {
-                    std::string leg_bd_name = "leg_" + dmg.data + "_3";
-                    auto bd = _skeleton->getBodyNode(leg_bd_name);
-                    bd->setMass(bd->getMass() / 2.0);
-                    auto nodes = bd->getShapeNodes();
+                    for (size_t i = 0; i < dmg.data.size(); i++) {
+                        int l = dmg.data[i] - '0';
+                        _broken_legs.push_back(l);
 
-                    for (auto node : nodes) {
-                        Eigen::Vector3d tr = node->getRelativeTranslation();
-                        tr(1) = tr(1) / 2.0;
-                        node->setRelativeTranslation(tr);
-                        auto s = node->getShape();
-                        if (s->getType() == "BoxShape") {
-                            auto b = (dart::dynamics::BoxShape*)s.get();
-                            Eigen::Vector3d size = b->getSize();
-                            size(2) = size(2) / 2.0;
-                            b->setSize(size);
-                        }
-                        else if (s->getType() == "CylinderShape") {
-                            auto b = (dart::dynamics::CylinderShape*)s.get();
-                            b->setHeight(b->getHeight() / 2.0);
-                        }
+                        std::string leg_bd_name = "leg_" + std::string(1, dmg.data[i]) + "_6";
+                        auto bd = _skeleton->getBodyNode(leg_bd_name);
+                        bd->removeAllShapeNodes();
+                        bd->remove();
                     }
                 }
                 else if (dmg.type == "blocked_joint") {
-                    auto jnt = _skeleton->getJoint(dmg.data);
-                    if (dmg.extra)
-                        jnt->setPosition(0, *((double*)dmg.extra));
-                    jnt->setActuatorType(dart::dynamics::Joint::LOCKED);
+                    for (size_t i = 0; i < dmg.data.size(); i++) {
+                        int l = dmg.data[i] - '0';
+                        _broken_legs.push_back(l);
+
+                        auto jnt = _skeleton->getJoint("body_joint_" + std::string(1, dmg.data[i]));
+                        if (dmg.extra)
+                            jnt->setPosition(0, *((double*)dmg.extra));
+                        jnt->setActuatorType(dart::dynamics::Joint::LOCKED);
+                    }
                 }
                 else if (dmg.type == "free_joint") {
-                    _skeleton->getJoint(dmg.data)->setActuatorType(dart::dynamics::Joint::PASSIVE);
+                    for (size_t i = 0; i < dmg.data.size(); i++) {
+                        int l = dmg.data[i] - '0';
+                        _broken_legs.push_back(l);
+
+                        _skeleton->getJoint("body_joint_" + std::string(1, dmg.data[i]))->setActuatorType(dart::dynamics::Joint::PASSIVE);
+                    }
                 }
             }
 
             std::sort(_broken_legs.begin(), _broken_legs.end());
+
+//            std::cout << "Broken legs: " ;
+//            for (size_t i = 0; i < _broken_legs.size(); i++)
+//                std::cout << _broken_legs.at(i) + ' ';
+//            std::cout << std::endl;
         }
 
         dart::dynamics::SkeletonPtr _skeleton;
