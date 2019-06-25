@@ -20,7 +20,7 @@ namespace rhex_dart {
                         rob->pos(),
                         rob->pos(),
                         arrow_properties, dart::Color::Orange(1.0)));
-                    auto bn = rob->skeleton()->getBodyNode("base_link");
+                    auto bn = rob->skeleton()->getBodyNode("body");
                     bn->template createShapeNodeWith<dart::dynamics::VisualAspect>(_arrow);
                     init = true;
                 }

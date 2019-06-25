@@ -52,7 +52,7 @@ namespace rhex_dart {
         // defaults
         struct defaults {
             using rhex_control_t = RhexControl;
-            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
+            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };
@@ -78,6 +78,7 @@ namespace rhex_dart {
 
             _world->getConstraintSolver()->setCollisionDetector(dart::collision::DARTCollisionDetector::create());
             _robot = robot;
+
             // set position of rhex
             _robot->skeleton()->setPosition(6, 0.4);
             _add_floor();
@@ -85,7 +86,7 @@ namespace rhex_dart {
             _world->addSkeleton(_robot->skeleton());
             _world->setTimeStep(0.005);
 
-			//TODO
+            // TODO
             std::vector<double> c_tmp(36, 0.0);
             _controller.set_parameters(c_tmp);
             _stabilize_robot(true);
@@ -114,7 +115,7 @@ namespace rhex_dart {
             size_t index = _old_index;
             Eigen::Vector3d init_pos = rob->pos();
 
-            // TO-DO: maybe wee need better solution for this/reset them?
+            // TO-DO: maybe we need better solution for this/reset them?
             static Eigen::Vector6d init_trans = rob->pose();
 
 #ifdef GRAPHIC
@@ -136,7 +137,8 @@ namespace rhex_dart {
                 
                 // update safety measures
                 boost::fusion::for_each(_safety_measures, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
-
+                // update visualizations
+                boost::fusion::for_each(_visualizations, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
 
                 if (_break) {
                     _covered_distance = -10002.0;
@@ -150,7 +152,7 @@ namespace rhex_dart {
                     auto COM = rob->skeleton()->getCOM();
                     // set camera to follow rhex
                     _osg_viewer.getCameraManipulator()->setHomePosition(
-                        osg::Vec3d(-0.5, 3, 1), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
+                        osg::Vec3d(3, -3, 0.5), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
                     _osg_viewer.home();
                 }
                 // process next frame
@@ -392,7 +394,7 @@ namespace rhex_dart {
                     _controller.update(_world->getTime());
                 }else{
                     _controller.set_commands();
-		}
+                }
                 _world->step();
                 if ((rob->pose() - prev_pose).norm() < 1e-4)
                     stab++;
@@ -419,7 +421,7 @@ namespace rhex_dart {
 
             // Give the body a shape
             double floor_width = 10.0;
-            double floor_height = 0.1;
+            double floor_height = 0.5;
             auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(floor_width, floor_width, floor_height));
             auto box_node = body->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
             box_node->getVisualAspect()->setColor(dart::Color::Red());

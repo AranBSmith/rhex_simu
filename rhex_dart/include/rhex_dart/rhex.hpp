@@ -31,11 +31,16 @@ namespace rhex_dart {
         Rhex(const std::string& model_file, const std::string& robot_name, const std::vector<std::pair<std::string, std::string>>& packages, bool is_urdf_string, std::vector<RhexDamage> damages) : _robot_name(robot_name), _skeleton(_load_model(model_file, packages, is_urdf_string))
         {
             assert(_skeleton != nullptr);
+
+            // lock_hip_joints();
             _set_damages(damages);
 
             // Set all coefficients to default values
             set_friction_coeff();
             set_restitution_coeff();
+
+            auto jnt = _skeleton->getJoint("body_joint_1" );
+            //jnt->getForceUpperLimits();
         }
 
         Rhex(const std::string& model_file, const std::string& robot_name, bool is_urdf_string, std::vector<RhexDamage> damages) : Rhex(model_file, robot_name, std::vector<std::pair<std::string, std::string>>(), is_urdf_string, damages) {}
@@ -112,6 +117,8 @@ namespace rhex_dart {
             if (friction < 0.0)
                 return;
 
+            std::cout << "Num body nodes: ";
+            std::cout << _skeleton->getNumBodyNodes() << std::endl;
             for (size_t i = 0; i < _skeleton->getNumBodyNodes(); i++) {
                 auto bd = _skeleton->getBodyNode(i);
                 bd->setFrictionCoeff(friction);
@@ -137,6 +144,20 @@ namespace rhex_dart {
         double get_restitution_coeff()
         {
             return _skeleton->getBodyNode(0)->getRestitutionCoeff();
+        }
+
+        void lock_hip_joints() {
+            for(size_t i = 0; i < 6; i++){
+                auto jnt = _skeleton->getJoint("body_joint_" + std::string(1, i +'0'));
+                jnt->setActuatorType(dart::dynamics::Joint::LOCKED);
+            }
+        }
+
+        void unlock_hip_joints() {
+            for(size_t i = 0; i < 6; i++){
+                auto jnt = _skeleton->getJoint("body_joint_" + std::string(1, i +'0'));
+                jnt->setActuatorType(dart::dynamics::Joint::FORCE);
+            }
         }
 
     protected:
@@ -198,7 +219,7 @@ namespace rhex_dart {
                 return nullptr;
 
             tmp_skel->setName(_robot_name);
-        // Set joint limits
+            // Set joint limits
             for (size_t i = 0; i < tmp_skel->getNumJoints(); ++i) {
                 tmp_skel->getJoint(i)->setPositionLimitEnforced(true);
             }

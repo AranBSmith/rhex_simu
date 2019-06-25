@@ -12,12 +12,9 @@ namespace rhex_dart {
             {
                 const dart::collision::CollisionResult& col_res = simu.world()->getLastCollisionResult();
                 auto body = rob->skeleton()->getRootBodyNode();
-                std::cout << "Root body node: ";
-                std::cout << body << std::endl;
-                std::cout << "Has mass: ";
-                std::cout << body->getMass() << std::endl;
+
                 if (col_res.inCollision(body)){
-                    std::cout<<"Stopping simulation for collision of root body node" << std::endl;
+                    // std::cout<<"Stopping simulation for collision of root body node" << std::endl;
                     simu.stop_sim();
                 }
             }
@@ -29,8 +26,8 @@ namespace rhex_dart {
             void operator()(Simu& simu, std::shared_ptr<robot> rob, const Eigen::Vector6d& init_trans)
             {
                 auto COM = rob->skeleton()->getCOM();
-                if (std::abs(COM(2)) > 0.3){
-                    std::cout<<"Stopping simulation for reaching max height" << std::endl;
+                if (std::abs(COM(2)) > 1){
+                    // std::cout<<"Stopping simulation for reaching max height" << std::endl;
                     simu.stop_sim();
                 }
             }
@@ -49,7 +46,7 @@ namespace rhex_dart {
                 Eigen::Vector3d robot_z_axis = rot_mat * z_axis;
                 double z_angle = std::atan2((z_axis.cross(robot_z_axis)).norm(), z_axis.dot(robot_z_axis));
                 if (std::abs(z_angle) >= dart::math::constants<double>::half_pi()){
-                    std::cout<<"Stopping simulation for turnover"<<std::endl;
+                    // std::cout<<"Stopping simulation for turnover"<<std::endl;
                     simu.stop_sim();
                 }
             }
