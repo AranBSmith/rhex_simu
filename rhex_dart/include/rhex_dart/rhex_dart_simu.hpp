@@ -87,7 +87,7 @@ namespace rhex_dart {
             _world->setTimeStep(0.005);
 
             // TODO
-            std::vector<double> c_tmp(36, 0.0);
+            std::vector<double> c_tmp(48, 0.0);
             _controller.set_parameters(c_tmp);
             _stabilize_robot(true);
             _world->setTime(0.0);
