@@ -80,16 +80,18 @@ namespace rhex_dart {
             _robot = robot;
 
             // set position of rhex
-            _robot->skeleton()->setPosition(6, 0.4);
+            _robot->skeleton()->setPosition(6, 0.1);
             _add_floor();
 
             _world->addSkeleton(_robot->skeleton());
             _world->setTimeStep(0.005);
 
-            // TODO
+            // TODO: set controller with world timestep.
             std::vector<double> c_tmp(48, 0.0);
             _controller.set_parameters(c_tmp);
-            _stabilize_robot(true);
+           //  _stabilize_robot(true);
+             //_world->setTimeStep(0.015);
+             _controller.update(_world->getTime());
             _world->setTime(0.0);
             _controller.set_parameters(ctrl);
 

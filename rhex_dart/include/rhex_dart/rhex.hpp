@@ -40,7 +40,7 @@ namespace rhex_dart {
             set_restitution_coeff();
 
             auto jnt = _skeleton->getJoint("body_joint_1" );
-            //jnt->getForceUpperLimits();
+            // jnt->getForceUpperLimits();
         }
 
         Rhex(const std::string& model_file, const std::string& robot_name, bool is_urdf_string, std::vector<RhexDamage> damages) : Rhex(model_file, robot_name, std::vector<std::pair<std::string, std::string>>(), is_urdf_string, damages) {}
@@ -191,8 +191,8 @@ namespace rhex_dart {
                     tmp_skel = dart::utils::SdfParser::readSkeleton(model_file);
                 else if (extension == "skel") {
                     tmp_skel = dart::utils::SkelParser::readSkeleton(model_file);
-                // if the skel file contains a world
-                // try to read the skeleton with name 'robot_name'
+                    // if the skel file contains a world
+                    // try to read the skeleton with name 'robot_name'
                     if (!tmp_skel) {
                         dart::simulation::WorldPtr world = dart::utils::SkelParser::readWorld(model_file);
                         tmp_skel = world->getSkeleton(_robot_name);
@@ -224,7 +224,7 @@ namespace rhex_dart {
                 tmp_skel->getJoint(i)->setPositionLimitEnforced(true);
             }
 
-        // Fix for mesh materials
+            // Fix for mesh materials
             for (size_t i = 0; i < tmp_skel->getNumBodyNodes(); ++i) {
                 dart::dynamics::BodyNode* bn = tmp_skel->getBodyNode(i);
                 for (size_t j = 0; j < bn->getNumShapeNodes(); ++j) {

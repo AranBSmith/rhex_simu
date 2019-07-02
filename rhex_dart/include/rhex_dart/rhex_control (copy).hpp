@@ -17,9 +17,7 @@ namespace rhex_dart {
         RhexControl(const std::vector<double>& ctrl, robot_t robot)
             : _controller(ctrl, robot->broken_legs()), _robot(robot)
         {
-            // need to init the cpg, and the pid controller.
-
-            _target_positions = _robot->skeleton()->getPositions(); // kind of pointless initialising this here, gets overwritten in in update
+            _target_positions = _robot->skeleton()->getPositions();
 
             size_t dof = _robot->skeleton()->getNumDofs();
             _p = Eigen::VectorXd::Zero(dof);
@@ -49,11 +47,15 @@ namespace rhex_dart {
             return _robot;
         }
 
-        void update(double t) // TODO: t is time delta?
+        void update(double t)
         {
-            // TODO target positions as a vector of doubles
-
-            auto inter = _controller.pos(t); // get this from cpg
+            // gets target positions as a vector of doubles
+            auto inter = _controller.pos(t);
+//            std::cout << "inter: " ;
+//            for (int i = 0; i < inter.size(); i++) {
+//                    std::cout << inter.at(i) << ' ';
+//            }
+//            std::cout << std::endl;
 
             // initialised the target positions vector as all zeros
             _target_positions = Eigen::VectorXd::Zero(inter.size() + 6);
@@ -68,8 +70,6 @@ namespace rhex_dart {
             }
            
             set_commands();
-            // good
-
         }
 
         void set_commands()
@@ -79,7 +79,6 @@ namespace rhex_dart {
                 return;
 
             Eigen::VectorXd q = _robot->skeleton()->getPositions();
-            // it looks like you can give the joint any value and it will translate it into an appropriate range for itself to work with.
             std::cout << "Current positions: ";
             std::cout << q << std::endl;
             Eigen::VectorXd dq = _robot->skeleton()->getVelocities();
@@ -88,9 +87,7 @@ namespace rhex_dart {
             for(int i = 0; i < q.size(); i++) {
                 q[i] = (remainder(q[i], double(2 * PI)) < 0) ? remainder(q[i], double(2 * PI)) + 2 * PI : remainder(q[i], double(2 * PI));
             }
-            // good
 
-            // TODO: remove, pid stored in pid_control.hpp
             get_PD();
 
             // depending on where my target is and where the robot is at i want the differences to be configured differently
@@ -117,12 +114,8 @@ namespace rhex_dart {
                 commands[i] = (commands[i] < -3) ? -3 : commands[i];
             }
 
-            // above not required, this work is done by pid_control.hpp after writing the setpoint and updating
-            // pid should return commands to be sent to skeleton below.
-
-            // std::cout << "Setting commands: ";
-            // std::cout << commands << std::endl;
-
+//            std::cout << "Setting commands: ";
+//            std::cout << commands << std::endl;
             // updates the robot with the new forces for the joints
             _robot->skeleton()->setCommands(commands);
         }
