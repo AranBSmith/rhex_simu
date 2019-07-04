@@ -39,7 +39,7 @@ namespace rhex_dart {
             set_friction_coeff();
             set_restitution_coeff();
 
-            auto jnt = _skeleton->getJoint("body_joint_1" );
+            // auto jnt = _skeleton->getJoint("body_joint_1" );
             // jnt->getForceUpperLimits();
         }
 
@@ -49,6 +49,7 @@ namespace rhex_dart {
         {
             assert(_skeleton != nullptr);
             _set_damages(damages);
+
         }
 
         std::shared_ptr<Rhex> clone() const
@@ -172,7 +173,7 @@ namespace rhex_dart {
             if (model_file[0] != '/') {
                 constexpr size_t max_size = 512;
                 char buff[max_size];
-                auto val = getcwd(buff, max_size);
+                // auto val = getcwd(buff, max_size);
                // ROBOT_DART_ASSERT(val, "Something bad happenned when trying to read current path", nullptr);
                 model_file = std::string(buff) + "/" + model_file;
             }

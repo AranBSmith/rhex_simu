@@ -27,8 +27,9 @@ int main()
     auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/raised.skel", "Rhex", false, brk);
 
     // sets the control vector up
-    std::vector<double> ctrl = {0.5, 0.95, 0.5, 0.95, 0.5, 0.9, 0.1, 5, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    
+    // std::vector<double> ctrl = {0.5, 0.95, 0.5, 0.95, 0.5, 0.9, 0.1, 5, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+     std::vector<double> ctrl = {0,0,0,0,0,0};
+
     // stationary control
     // ctrl = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     // ctrl = {1, 0.85, 0.95, 1, 0.35, 0.2, 0.85, 0.05, 0.3, 0.95, 0.85, 0.4, 0.8, 0.55, 0.15, 0.25, 0.15, 0.85, 0.85, 0.85, 0.6, 0.5, 0.95, 0.05, 1, 0.25, 0.8, 0.75, 0.9, 0.3, 0.95, 0.3, 0.3, 0.65, 0.7, 0.75};
@@ -39,15 +40,14 @@ int main()
     using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle, rhex_dart::descriptors::BodyOrientation>;
 
     using viz_t = boost::fusion::vector<rhex_dart::visualizations::HeadingArrow, rhex_dart::visualizations::PointingArrow<Params>>;
-
     rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot);
 
 #ifdef GRAPHIC
     simu.fixed_camera(Eigen::Vector3d(3, 0, 0.5));
     simu.follow_rhex();
 #endif
-
     simu.run(15);
+
     std::cout << "Covered distance | Arrival angle | Body avg height" << std::endl;
     std::cout << simu.covered_distance() << " " << simu.arrival_angle() << " " << simu.body_avg_height()<<std::endl;
     std::cout << "Energy" << std::endl;

@@ -79,6 +79,7 @@ def build(bld):
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_dart_simu.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_control.hpp')
+    bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/pid_control.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/safety_measures.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/descriptors.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/visualizations.hpp')
