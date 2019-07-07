@@ -22,14 +22,16 @@ int main(int argc, char** argv)
     std::vector<rhex_dart::RhexDamage> brk = {};
 
     // loads the robot with name Rhex tels it that it is not a URDF file and give it the blank damages
-    // auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/RHex8.skel", "Rhex", false, brk);
-    // auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/skinny.skel", "Rhex", false, brk);
-    auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/raised.skel", "Rhex", false, brk);
+    // raised.skel, skinny.skel, Rhex8.skel
+    auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[1], "Rhex", false, brk);
 
     // sets the control vector up
-    // 2 3 0 1 2 0.01 0.25 0.25
-    // std::vector<double> ctrl = {0.8, 14, 0.00001, 1, 1, 1, 0.25, 0.25};
-    std::vector<double> ctrl = {atof(argv[1]), atof(argv[2]), atof(argv[3]), atof(argv[4]), atof(argv[5]), atof(argv[6]), atof(argv[7]), atof(argv[8])};
+    // 0.2 0.5 0 0.4 0.5 0.25 0.5 0.25 0.5 0.5 0 0.5 0
+    std::vector<double> ctrl = {atof(argv[2]), atof(argv[3]), atof(argv[4]),
+                                atof(argv[5]), atof(argv[6]), atof(argv[7]),
+                                atof(argv[8]), atof(argv[9]), atof(argv[10]),
+                                atof(argv[11]), atof(argv[12]), atof(argv[13]),
+                                atof(argv[14])};
 
     using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle, rhex_dart::descriptors::BodyOrientation>;
 
@@ -44,20 +46,20 @@ int main(int argc, char** argv)
 
     std::cout << "Covered distance | Arrival angle | Body avg height" << std::endl;
     std::cout << simu.covered_distance() << " " << simu.arrival_angle() << " " << simu.body_avg_height()<<std::endl;
+
     std::cout << "Energy" << std::endl;
     std::cout << simu.energy() << std::endl;
+
     std::vector<double> v;
     simu.get_descriptor<rhex_dart::descriptors::DutyCycle>(v);
-	
     std::cout << "Duty Cycle:" << std::endl;
     for (size_t i = 0; i < v.size(); i++) {
         std::cout << v[i] << " ";
     }
-    
     std::cout << std::endl;
+
     std::vector<double> vv;
     simu.get_descriptor<rhex_dart::descriptors::BodyOrientation>(vv);
-    
     std::cout << "Body Orientation" << std::endl;
     for (size_t i = 0; i < vv.size(); i++) {
         std::cout << vv[i] << " ";

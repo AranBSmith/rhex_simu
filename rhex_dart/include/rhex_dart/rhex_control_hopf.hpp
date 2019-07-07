@@ -6,6 +6,10 @@
 #include <rhex_controller/rhex_controller_hopf.hpp>
 #define PI 3.14159265
 
+#define PROP 5
+#define INTEG 20
+#define DIFF 0.0
+
 namespace rhex_dart {
 
     class RhexControlHopf {
@@ -19,6 +23,7 @@ namespace rhex_dart {
         {
             set_parameters(ctrl);
             _feedback = std::vector<double>(6, 0.0);
+            _compensatory_count = std::vector<int>(6, 0);
         }
 
         void set_parameters(const std::vector<double>& ctrl)
@@ -33,9 +38,9 @@ namespace rhex_dart {
             }
 
             _pid.clear();
-            _pid.set_Kp(ctrl[0]);
-            _pid.set_Ki(ctrl[1]);
-            _pid.set_Kd(ctrl[2]);
+            _pid.set_Kp(ctrl[0] * PROP);
+            _pid.set_Ki(ctrl[1] * INTEG);
+            _pid.set_Kd(ctrl[2] * DIFF);
 
             std::vector<double>::const_iterator first = ctrl.begin() + 3;
             std::vector<double>::const_iterator last = ctrl.begin() + ctrl.size();
@@ -69,6 +74,29 @@ namespace rhex_dart {
                 feedback[i] = current_positions[i+6];
             }
 
+            // if the target is one or more full rotations ahead, subtract the appropriate amount of rotations.
+            // this needs to be sustained for the rest of the simulation as the signal will never decrease.
+            for (size_t i = 0; i < 6; ++i){
+                double diff = _target_positions[i] - 2 * PI * _compensatory_count[i] - feedback[i];
+                while(diff >= 2*PI){
+                    _compensatory_count[i] += 1;
+                    diff = _target_positions[i] - 2 * PI * _compensatory_count[i] - feedback[i];
+                }
+                _target_positions[i] -= 2 * PI * _compensatory_count[i];
+
+                // similarly, if the feedback is more than 2 PI ahead of the signal, we dont want the leg to wait
+                // which influences other legs in a negative way because of phase.
+//                diff = feedback[i] - _target_positions[i];
+//                while (diff > 2*PI){
+//                    _compensatory_count[i] -= 1;
+//                    diff = feedback[i] - _target_positions[i] + 2 * PI * _compensatory_count[i];
+//                }
+//                _target_positions[i] += 2 * PI * _compensatory_count[i];
+                diff = feedback[i] - _target_positions[i];
+                if (diff > 2*(3*PI)/4)
+                    _target_positions[i] +=  2 * PI;
+            }
+
             std::cout << "Target/cpg/setpoint positions: " ;
             for (size_t i = 0; i < 6; ++i){
                 std::cout << _target_positions[i] << " ";
@@ -83,9 +111,8 @@ namespace rhex_dart {
             std::cout << std::endl;
 
             _pid.set_points(_target_positions);
-
-
             _pid.update(feedback, t);
+
             std::vector<double> pid_output = _pid.get_output();
 
             Eigen::VectorXd commands = Eigen::VectorXd::Zero(54);
@@ -104,7 +131,9 @@ namespace rhex_dart {
                 std::cout << commands[i + 6] << " ";
             }
             std::cout << std::endl;
+
             _robot->skeleton()->setCommands(commands);
+
         }
 
     protected:
@@ -113,6 +142,7 @@ namespace rhex_dart {
         robot_t _robot;
         std::vector<double> _feedback;
         std::vector<double> _target_positions;
+        std::vector<int> _compensatory_count;
 
 
     };

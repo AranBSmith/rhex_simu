@@ -52,8 +52,7 @@ namespace rhex_dart {
         // defaults
         struct defaults {
             using rhex_control_t = RhexControlHopf;
-            // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
-            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
+            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };
@@ -128,7 +127,6 @@ namespace rhex_dart {
             while ((_world->getTime() - old_t) < duration)
 #endif
             {
-
                 _controller.update(chain ? (_world->getTime() - old_t) : _world->getTime());            
 
                 _world->step(false); 
@@ -138,7 +136,8 @@ namespace rhex_dart {
                 _energy += state.sum();
                 
                 // update safety measures
-                boost::fusion::for_each(_safety_measures, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
+                if (_world->getTime() >= 2)
+                    boost::fusion::for_each(_safety_measures, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
                 // update visualizations
                 boost::fusion::for_each(_visualizations, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
 
@@ -168,6 +167,7 @@ namespace rhex_dart {
 
                 ++index;
                 _body_avg_height += rob->pos()[2];
+
             }
             _old_index = index;
 
@@ -181,7 +181,7 @@ namespace rhex_dart {
             }
             Eigen::Vector3d fin_pos = rob->pos();
 
-            // updates values of covered dstance average body height and arrival angle
+            // updates values of covered distance average body height and arrival angle
             _covered_distance = fin_pos[0]-init_pos[0];
             _body_avg_height = (chain)?_body_avg_height/(_world->getTime()-old_t):_world->getTime();
             _arrival_angle = std::round(atan((fin_pos[1]-init_pos[1])/(_covered_distance)) * 100) / 100.0;
