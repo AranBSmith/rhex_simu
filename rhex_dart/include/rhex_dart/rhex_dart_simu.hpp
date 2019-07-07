@@ -11,7 +11,7 @@
 #include <dart/collision/dart/DARTCollisionDetector.hpp>
 #include <Eigen/Core>
 #include <rhex_dart/rhex.hpp>
-#include <rhex_dart/rhex_control.hpp>
+#include <rhex_dart/rhex_control_hopf.hpp>
 #include <rhex_dart/safety_measures.hpp>
 #include <rhex_dart/descriptors.hpp>
 #include <rhex_dart/visualizations.hpp>
@@ -51,7 +51,7 @@ namespace rhex_dart {
         using robot_t = std::shared_ptr<Rhex>;
         // defaults
         struct defaults {
-            using rhex_control_t = RhexControl;
+            using rhex_control_t = RhexControlHopf;
             // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
             using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle>;
@@ -87,18 +87,14 @@ namespace rhex_dart {
             _world->addSkeleton(_robot->skeleton());
             _world->setTimeStep(0.005);
 
-            // TODO: correct number of parameters
-            std::vector<double> c_tmp(6, 0.0);
+            _controller.set_parameters(ctrl);
 
-            _controller.set_parameters(c_tmp);
-
-           //  _stabilize_robot(true);
+             //_stabilize_robot(true);
              //_world->setTimeStep(0.015);
              _controller.update(_world->getTime());
 
             _world->setTime(0.0);
 
-            _controller.set_parameters(ctrl);
 
 
 #ifdef GRAPHIC
@@ -132,8 +128,7 @@ namespace rhex_dart {
             while ((_world->getTime() - old_t) < duration)
 #endif
             {
-                std::cout<< "Chain: ";
-                std::cout<< chain << std::endl;
+
                 _controller.update(chain ? (_world->getTime() - old_t) : _world->getTime());            
 
                 _world->step(false); 
@@ -401,6 +396,7 @@ namespace rhex_dart {
                     _controller.update(_world->getTime());
                 }else{
                     std::cout << "Warning: want to 'set command' " << std::endl;
+                    //
                     //_controller.set_commands();
                 }
                 _world->step();

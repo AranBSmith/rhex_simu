@@ -118,8 +118,8 @@ namespace rhex_dart {
             if (friction < 0.0)
                 return;
 
-            std::cout << "Num body nodes: ";
-            std::cout << _skeleton->getNumBodyNodes() << std::endl;
+//            std::cout << "Num body nodes: ";
+//            std::cout << _skeleton->getNumBodyNodes() << std::endl;
             for (size_t i = 0; i < _skeleton->getNumBodyNodes(); i++) {
                 auto bd = _skeleton->getBodyNode(i);
                 bd->setFrictionCoeff(friction);

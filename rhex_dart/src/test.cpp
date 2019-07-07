@@ -16,7 +16,7 @@ struct Params {
     static std::string body_name() { return "BodyNode"; }
 };
 
-int main()
+int main(int argc, char** argv)
 {
     // using the same model as the hexapod and so the robot has a damages parameter but is set to 0
     std::vector<rhex_dart::RhexDamage> brk = {};
@@ -27,15 +27,9 @@ int main()
     auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/raised.skel", "Rhex", false, brk);
 
     // sets the control vector up
-    // std::vector<double> ctrl = {0.5, 0.95, 0.5, 0.95, 0.5, 0.9, 0.1, 5, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-     std::vector<double> ctrl = {0,0,0,0,0,0};
-
-    // stationary control
-    // ctrl = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    // ctrl = {1, 0.85, 0.95, 1, 0.35, 0.2, 0.85, 0.05, 0.3, 0.95, 0.85, 0.4, 0.8, 0.55, 0.15, 0.25, 0.15, 0.85, 0.85, 0.85, 0.6, 0.5, 0.95, 0.05, 1, 0.25, 0.8, 0.75, 0.9, 0.3, 0.95, 0.3, 0.3, 0.65, 0.7, 0.75};
-    // ctrl = {0.9, 1.0, 1.0, 0.75, 0.4, 0.95, 0.8, 0.9, 0.15, 0.2, 0.9, 0.15, 0.85, 0.3, 0.4, 0.8, 0.8, 0.7, 1.0, 0.9, 0.65, 0.1, 0.6, 0.4, 1.0, 0.75, 0.8, 0.8, 0.8, 0.75, 0.35, 0.35, 0.5, 0.8, 0.75, 0.85};
-    // ctrl = {0.75, 0.9, 0.7, 0.75, 0.9, 0, 1, 0.1, 0.35, 0.2, 0.1, 0.15, 0.95, 0.25, 0.15, 0, 0.15, 0.15, 0.85, 0.95, 0.6, 0.9, 1, 0.2, 0.9, 0.85, 0.8, 0.25, 0.6, 0.95, 1, 0, 0.6, 0.3, 0.85, 0.75};
-    // ctrl = {0.05, 0.8, 0.1, 0.9, 0.7, 0.35, 0.9, 1, 0.3, 0.7, 0.05, 0.15, 0.95, 0.75, 0.7, 0.95, 0.6, 0.6, 0.75, 0.7, 0.95, 0.6, 0.3, 0.35, 1, 0.4, 0.65, 0.55, 0.25, 0.6, 0.9, 0.75, 0.4, 1, 0.7, 0.85};
+    // 2 3 0 1 2 0.01 0.25 0.25
+    // std::vector<double> ctrl = {0.8, 14, 0.00001, 1, 1, 1, 0.25, 0.25};
+    std::vector<double> ctrl = {atof(argv[1]), atof(argv[2]), atof(argv[3]), atof(argv[4]), atof(argv[5]), atof(argv[6]), atof(argv[7]), atof(argv[8])};
 
     using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle, rhex_dart::descriptors::BodyOrientation>;
 

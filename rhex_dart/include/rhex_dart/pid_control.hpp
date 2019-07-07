@@ -18,7 +18,6 @@ namespace rhex_dart {
             _Kd = d;
 
             clear();
-
         }
 
         void clear() // Clears PID computations and coefficients
@@ -28,19 +27,24 @@ namespace rhex_dart {
             _Pterm =  std::vector<double>(6, 0.0);
             _Iterm =  std::vector<double>(6, 0.0);
             _Dterm =  std::vector<double>(6, 0.0);
-            _last_error =  std::vector<double>(6, 0.0);
+            _last_error = std::vector<double>(6, 0.0);
 
             _windup_guard = PI;
 
-            _output =  std::vector<double>(6, 0.0);;
+            _output = std::vector<double>(6, 0.0);
+            _last_time = 0.0;
         }
 
-        void update(const std::vector<double>& feedback_values){
+        void update(const std::vector<double>& feedback_values, double time){
             // Calculates PID value for given reference feedback
             // u(t) = K_p e(t) + K_i \int_{0}^{t} e(t)dt + K_d {de}/{dt}
             std::vector<double> error(6, 0);
-
             std::vector<double> delta_error(6, 0);
+
+            _delta_time = time - _last_time;
+            if (_delta_time < 0)
+                _delta_time = 0; // cant be less than zero, happens at start of sim.
+            _last_time = time;
 
             for(size_t i = 0; i < 6; ++i){
 
@@ -52,10 +56,14 @@ namespace rhex_dart {
 
                 _Iterm[i] += error[i] * _delta_time;
 
-                if (_Iterm[i] < -_windup_guard)
+                if (_Iterm[i] < -_windup_guard){
+                    std::cout<< "hit the negative iterm windup guard" << std::endl;
                     _Iterm[i] = -_windup_guard;
-                else if (_Iterm[i] > _windup_guard)
+                }
+                else if (_Iterm[i] > _windup_guard){
+                    std::cout<< "hit the positive iterm windup guard" << std::endl;
                     _Iterm[i] = _windup_guard;
+                }
 
                 _Dterm[i] = 0.0;
                 if (_delta_time > 0)
@@ -63,10 +71,9 @@ namespace rhex_dart {
 
                 // Remember last error for next calculation
                 _last_error[i] = error[i];
-                // std::cout << "str(_Pterm) + " " + str(_Iterm) + " " + str(_Dterm) << std::endl;
+                // std::cout << Pterm) + " " + str(_Iterm) + " " + str(_Dterm) << std::endl;
 
                 _output[i] = _Pterm[i] + (_Ki * _Iterm[i]) + (_Kd * _Dterm[i]);
-                //std::cout<<"end update"<<std::endl;
 
             }
         }
@@ -122,6 +129,7 @@ namespace rhex_dart {
         double _Ki;
         double _Kd;
         double _delta_time;
+        double _last_time;
 
         std::vector<double> _set_point;
         std::vector<double> _Pterm;
