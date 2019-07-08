@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     simu.run(15);
 
     std::cout << "Covered distance | Arrival angle | Body avg height" << std::endl;
-    std::cout << simu.covered_distance() << " " << simu.arrival_angle() << " " << simu.body_avg_height()<<std::endl;
+    std::cout << simu.covered_distance() << " " << simu.arrival_angle() << " " << simu.body_avg_height() << std::endl;
 
     std::cout << "Energy" << std::endl;
     std::cout << simu.energy() << std::endl;

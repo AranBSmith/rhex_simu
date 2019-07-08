@@ -57,11 +57,11 @@ namespace rhex_dart {
                 _Iterm[i] += error[i] * _delta_time;
 
                 if (_Iterm[i] < -_windup_guard){
-                    std::cout<< "hit the negative iterm windup guard" << std::endl;
+                    //std::cout<< "hit the negative iterm windup guard" << std::endl;
                     _Iterm[i] = -_windup_guard;
                 }
                 else if (_Iterm[i] > _windup_guard){
-                    std::cout<< "hit the positive iterm windup guard" << std::endl;
+                    //std::cout<< "hit the positive iterm windup guard" << std::endl;
                     _Iterm[i] = _windup_guard;
                 }
 

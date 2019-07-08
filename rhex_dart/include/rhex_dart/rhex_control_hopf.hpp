@@ -97,18 +97,18 @@ namespace rhex_dart {
                     _target_positions[i] +=  2 * PI;
             }
 
-            std::cout << "Target/cpg/setpoint positions: " ;
-            for (size_t i = 0; i < 6; ++i){
-                std::cout << _target_positions[i] << " ";
-            }
-            std::cout << std::endl;
+//            std::cout << "Target/cpg/setpoint positions: " ;
+//            for (size_t i = 0; i < 6; ++i){
+//                std::cout << _target_positions[i] << " ";
+//            }
+//            std::cout << std::endl;
 
-            std::cout << "feedback/current positions: " ;
+//            std::cout << "feedback/current positions: " ;
 
-            for (size_t i = 0; i < 6; ++i){
-                std::cout << feedback[i] << " ";
-            }
-            std::cout << std::endl;
+//            for (size_t i = 0; i < 6; ++i){
+//                std::cout << feedback[i] << " ";
+//            }
+//            std::cout << std::endl;
 
             _pid.set_points(_target_positions);
             _pid.update(feedback, t);
@@ -126,11 +126,11 @@ namespace rhex_dart {
 
             }
 
-            std::cout << "Setting commands: ";
-            for (size_t i = 0; i < 6; ++i){
-                std::cout << commands[i + 6] << " ";
-            }
-            std::cout << std::endl;
+//            std::cout << "Setting commands: ";
+//            for (size_t i = 0; i < 6; ++i){
+//                std::cout << commands[i + 6] << " ";
+//            }
+//            std::cout << std::endl;
 
             _robot->skeleton()->setCommands(commands);
 

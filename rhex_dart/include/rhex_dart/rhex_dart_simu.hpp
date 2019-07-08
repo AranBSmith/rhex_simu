@@ -395,7 +395,7 @@ namespace rhex_dart {
                 if (update_ctrl){
                     _controller.update(_world->getTime());
                 }else{
-                    std::cout << "Warning: want to 'set command' " << std::endl;
+                    //std::cout << "Warning: want to 'set command' " << std::endl;
                     //
                     //_controller.set_commands();
                 }
