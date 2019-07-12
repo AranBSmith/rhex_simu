@@ -69,17 +69,32 @@ def build(bld):
                       defines = ['GRAPHIC'],
                       target = 'test')
 
+        bld.program(features = 'cxx',
+                      install_path = None,
+                      source = 'src/test_damage.cpp',
+                      includes = './include',
+                      uselib = 'BOOST BOOST_SYSTEM BOOST_REGEX EIGEN RHEX_CONTROLLER DART_GRAPHIC',
+                      defines = ['GRAPHIC'],
+                      target = 'test_damage')
+
     bld.program(features = 'cxx',
                   install_path = None,
                   source = 'src/test.cpp',
                   includes = './include',
                   uselib = 'BOOST BOOST_SYSTEM BOOST_REGEX DART EIGEN RHEX_CONTROLLER',
                   target = 'test_plain')
+    bld.program(features = 'cxx',
+                  install_path = None,
+                  source = 'src/test_damage.cpp',
+                  includes = './include',
+                  uselib = 'BOOST BOOST_SYSTEM BOOST_REGEX DART EIGEN RHEX_CONTROLLER',
+                  target = 'test_damage_plain')
 
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_dart_simu.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_control_cpg.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_control_hopf.hpp')
+    bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_control_buehler.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_control_roman.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/pid_control.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/safety_measures.hpp')

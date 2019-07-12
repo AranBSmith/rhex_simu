@@ -1,3 +1,4 @@
+
 #include <iostream>
 #include <cstdlib>
 #include <rhex_dart/rhex_dart_simu.hpp>
@@ -19,27 +20,29 @@ struct Params {
 int main(int argc, char** argv)
 {
     // using the same model as the hexapod and so the robot has a damages parameter but is set to 0
-    std::vector<rhex_dart::RhexDamage> brk = {};
+
+    std::vector<rhex_dart::RhexDamage> damages(0);
+
+
+    damages.push_back(rhex_dart::RhexDamage("leg_removal", "1"));
+    // damages.push_back(rhex_dart::RhexDamage("leg_removal", "5"));
+	
 
     // loads the robot with name Rhex tels it that it is not a URDF file and give it the blank damages
     // raised.skel, skinny.skel, Rhex8.skel
-    auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[1], "Rhex", false, brk);
+    auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[1], "Rhex", false, damages);
 
     // sets the control vector up
     // 0.2 0.5 0 0.4 0.5 0.25 0.5 0.25 0.5 0.5 0 0.5 0
-//    std::vector<double> ctrl = {atof(argv[2]), atof(argv[3]), atof(argv[4]),
-//                                atof(argv[5]), atof(argv[6]), atof(argv[7]),
-//                                atof(argv[8]), atof(argv[9]), atof(argv[10]),
-//                                atof(argv[11]), atof(argv[12]), atof(argv[13])};
-
     std::vector<double> ctrl = {atof(argv[2]), atof(argv[3]), atof(argv[4]),
                                 atof(argv[5]), atof(argv[6]), atof(argv[7]),
-                                atof(argv[8])};
+                                atof(argv[8]), atof(argv[9]), atof(argv[10]),
+                                atof(argv[11]), atof(argv[12]), atof(argv[13])};
 
     using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle, rhex_dart::descriptors::BodyOrientation>;
 
     using viz_t = boost::fusion::vector<rhex_dart::visualizations::HeadingArrow, rhex_dart::visualizations::PointingArrow<Params>>;
-    rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot);
+    rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot, damages);
 
 #ifdef GRAPHIC
     simu.fixed_camera(Eigen::Vector3d(3, 0, 0.5));

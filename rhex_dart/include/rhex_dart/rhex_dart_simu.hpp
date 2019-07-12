@@ -11,7 +11,7 @@
 #include <dart/collision/dart/DARTCollisionDetector.hpp>
 #include <Eigen/Core>
 #include <rhex_dart/rhex.hpp>
-#include <rhex_dart/rhex_control_hopf.hpp>
+#include <rhex_dart/rhex_control_buehler.hpp>
 #include <rhex_dart/safety_measures.hpp>
 #include <rhex_dart/descriptors.hpp>
 #include <rhex_dart/visualizations.hpp>
@@ -51,8 +51,9 @@ namespace rhex_dart {
         using robot_t = std::shared_ptr<Rhex>;
         // defaults
         struct defaults {
-            using rhex_control_t = RhexControlHopf;
-            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
+            using rhex_control_t = RhexControlBuehler;
+            // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
+            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };
@@ -75,7 +76,24 @@ namespace rhex_dart {
                                                                           _desc_period(2),
                                                                           _break(false)
         {
-            _world->getConstraintSolver()->setCollisionDetector(dart::collision::DARTCollisionDetector::create());
+			setup(ctrl, robot);
+        }
+
+        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot, std::vector<rhex_dart::RhexDamage> damages) : _covered_distance(0.0),
+                                                                          _energy(0.0),
+                                                                          _world(std::make_shared<dart::simulation::World>()),
+                                                                          _controller(ctrl, robot, damages),
+                                                                          _old_index(0),
+                                                                          _desc_period(2),
+                                                                          _break(false)
+        {
+			setup(ctrl, robot);
+        }
+        
+        void setup(const std::vector<double>& ctrl, robot_t robot)
+        {
+        
+        	_world->getConstraintSolver()->setCollisionDetector(dart::collision::DARTCollisionDetector::create());
             _robot = robot;
 
             // set position of rhex
@@ -107,6 +125,8 @@ namespace rhex_dart {
 // _osg_viewer.setUpViewOnSingleScreen();
 #endif
         }
+
+
 
         ~RhexDARTSimu() {}
 
