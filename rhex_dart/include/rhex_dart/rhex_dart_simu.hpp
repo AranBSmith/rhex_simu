@@ -52,8 +52,8 @@ namespace rhex_dart {
         // defaults
         struct defaults {
             using rhex_control_t = RhexControlBuehler;
-            // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
-            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
+            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
+            // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };
@@ -156,7 +156,7 @@ namespace rhex_dart {
                 _energy += state.sum();
                 
                 // update safety measures
-                if (_world->getTime() >= 2)
+                if (_world->getTime() >= 1)
                     boost::fusion::for_each(_safety_measures, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
                 // update visualizations
                 boost::fusion::for_each(_visualizations, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
