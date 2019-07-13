@@ -14,7 +14,7 @@ namespace rhex_dart {
                 auto body = rob->skeleton()->getRootBodyNode();
 
                 if (col_res.inCollision(body)){
-                    std::cout<<"Stopping for body collision" <<std::endl;
+                    //std::cout<<"Stopping for body collision" <<std::endl;
                     simu.stop_sim();
                 }
             }
@@ -27,7 +27,7 @@ namespace rhex_dart {
             {
                 auto COM = rob->skeleton()->getCOM();
                 if (std::abs(COM(2)) > 1){
-                    std::cout<<"Stopping for max height" <<std::endl;
+                    //std::cout<<"Stopping for max height" <<std::endl;
 
                     simu.stop_sim();
                 }
@@ -47,7 +47,7 @@ namespace rhex_dart {
                 Eigen::Vector3d robot_z_axis = rot_mat * z_axis;
                 double z_angle = std::atan2((z_axis.cross(robot_z_axis)).norm(), z_axis.dot(robot_z_axis));
                 if (std::abs(z_angle) >= dart::math::constants<double>::half_pi()){
-                    std::cout<<"Stopping for turn over" <<std::endl;
+                    //std::cout<<"Stopping for turn over" <<std::endl;
 
                     simu.stop_sim();
                 }
