@@ -27,6 +27,7 @@ int main(int argc, char** argv)
 
     // sets the control vector up
     // 0.2 0.5 0 0.4 0.5 0.25 0.5 0.25 0.5 0.5 0 0.5 0
+    // ./waf && ./build/test raised.skel 0.2 0.5 0 0.4 0.5 0.5 0.25
 //    std::vector<double> ctrl = {atof(argv[2]), atof(argv[3]), atof(argv[4]),
 //                                atof(argv[5]), atof(argv[6]), atof(argv[7]),
 //                                atof(argv[8]), atof(argv[9]), atof(argv[10]),
@@ -34,7 +35,8 @@ int main(int argc, char** argv)
 
     std::vector<double> ctrl = {atof(argv[2]), atof(argv[3]), atof(argv[4]),
                                 atof(argv[5]), atof(argv[6]), atof(argv[7]),
-                                atof(argv[8])};
+                                atof(argv[8]),atof(argv[9]),atof(argv[10]),
+                                atof(argv[11]),atof(argv[12]),atof(argv[13])};
 
     using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle, rhex_dart::descriptors::BodyOrientation>;
 

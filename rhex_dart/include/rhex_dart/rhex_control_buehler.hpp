@@ -9,7 +9,7 @@
 
 #define PROP 5
 #define INTEG 20
-#define DIFF 1
+#define DIFF 5
 #define CPG_SIZE 6
 #define FORCE_LIMIT 3
 #define IGNORE 1000
@@ -86,13 +86,13 @@ namespace rhex_dart {
                 return;
 
             _target_positions = _cpg.pos(t);
-
+            
             Eigen::VectorXd current_positions = _robot->skeleton()->getPositions();
-            std::cout<< "current positions: " ;
-            for (size_t i = 0; i < current_positions.size(); ++i){
-                std::cout << current_positions[i] << " ";
-            }
-            std::cout<<std::endl;
+//            std::cout<< "current positions: " ;
+//            for (size_t i = 0; i < current_positions.size(); ++i){
+//                std::cout << current_positions[i] << " ";
+//            }
+//            std::cout<<std::endl;
 
             std::vector<double> feedback(CPG_SIZE, 0);
             int skip_count = 0;
@@ -111,38 +111,38 @@ namespace rhex_dart {
 
             // if the target is one or more full rotations ahead, subtract the appropriate amount of rotations.
             // this needs to be sustained for the rest of the simulation as the signal will never decrease.
-//            for (size_t i = 0; i < CPG_SIZE; ++i)
-//            {
-//                double diff = _target_positions[i] - 2 * PI * _compensatory_count[i] - feedback[i];
+            for (size_t i = 0; i < CPG_SIZE; ++i)
+            {
+                double diff = _target_positions[i] - 2 * PI * _compensatory_count[i] - feedback[i];
 
-//                while(diff >= 2*PI)
-//                {
-//                    _compensatory_count[i] += 1;
-//                    diff = _target_positions[i] - 2 * PI * _compensatory_count[i] - feedback[i];
-//                }
+                while(diff >= 2*PI)
+                {
+                    _compensatory_count[i] += 1;
+                    diff = _target_positions[i] - 2 * PI * _compensatory_count[i] - feedback[i];
+                }
 
-//                _target_positions[i] -= 2 * PI * _compensatory_count[i];
+                _target_positions[i] -= 2 * PI * _compensatory_count[i];
 
-//                // similarly, if the feedback is more than 2 PI ahead of the signal, we dont want the leg to wait
-//                // which influences other legs in a negative way because of phase.
-//                diff = feedback[i] - _target_positions[i];
+                // similarly, if the feedback is more than 2 PI ahead of the signal, we dont want the leg to wait
+                // which influences other legs in a negative way because of phase.
+                diff = feedback[i] - _target_positions[i];
 
-//                if (diff > 2*(3*PI)/4)
-//                    _target_positions[i] +=  2 * PI;
+                if (diff > 2*(3*PI)/4)
+                    _target_positions[i] +=  2 * PI;
+            }
+
+//            std::cout << "Target/cpg/setpoint positions: " ;
+//            for (size_t i = 0; i < 6; ++i){
+//                std::cout << _target_positions[i] << " ";
 //            }
+//            std::cout << std::endl;
 
-            std::cout << "Target/cpg/setpoint positions: " ;
-            for (size_t i = 0; i < 6; ++i){
-                std::cout << _target_positions[i] << " ";
-            }
-            std::cout << std::endl;
+//            std::cout << "feedback/current positions: " ;
 
-            std::cout << "feedback/current positions: " ;
-
-            for (size_t i = 0; i < CPG_SIZE; ++i){
-                std::cout << feedback[i] << " ";
-            }
-            std::cout << std::endl;
+//            for (size_t i = 0; i < CPG_SIZE; ++i){
+//                std::cout << feedback[i] << " ";
+//            }
+//            std::cout << std::endl;
 
             _pid.set_points(_target_positions);
             _pid.update(feedback, t);
@@ -182,11 +182,11 @@ namespace rhex_dart {
                 }
             }
 
-            std::cout << "Setting commands: ";
-            for (size_t i = 0; i < _leg_count; ++i){
-                std::cout << commands[i + CPG_SIZE] << " ";
-            }
-            std::cout << std::endl;
+//            std::cout << "Setting commands: ";
+//            for (size_t i = 0; i < _leg_count; ++i){
+//                std::cout << commands[i + CPG_SIZE] << " ";
+//            }
+//            std::cout << std::endl;
 
             _robot->skeleton()->setCommands(commands);
 
