@@ -26,7 +26,7 @@ namespace rhex_dart {
             void operator()(Simu& simu, std::shared_ptr<robot> rob, const Eigen::Vector6d& init_trans)
             {
                 auto COM = rob->skeleton()->getCOM();
-                if (std::abs(COM(2)) > 1){
+                if (std::abs(COM(2)) > 0.3){
                     //std::cout<<"Stopping for max height" <<std::endl;
 
                     simu.stop_sim();

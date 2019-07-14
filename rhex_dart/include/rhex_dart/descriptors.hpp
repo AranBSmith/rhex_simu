@@ -39,19 +39,31 @@ namespace rhex_dart {
                     _contacts[i] = std::vector<size_t>();
             }
 
+            // sometimes the leg tip can be raised and the segment before it in collision with the ground,
+            // thus check all the segments in the leg for collision with the gound, if collision detected
+            // then record it and don't continue checking the rest of the leg.
             template <typename Simu, typename robot>
             void operator()(Simu& simu, std::shared_ptr<robot> rob, const Eigen::Vector6d& init_trans)
             {
                 const dart::collision::CollisionResult& col_res = simu.world()->getLastCollisionResult();
                 for (size_t i = 0; i < 6; ++i) {
-                    std::string leg_name = "leg_" + std::to_string(i) + "_8";
-                    dart::dynamics::BodyNodePtr body_to_check = rob->skeleton()->getBodyNode(leg_name);
-
                     if (rob->is_broken(i)) {
                         _contacts[i].push_back(0);
+                        std::cout<<"pushing back 0" <<std::endl;
                     }
                     else {
-                        _contacts[i].push_back(col_res.inCollision(body_to_check));
+                        for (size_t j = 1; j <= 8; ++j) {
+                            std::string leg_segment = "leg_" + std::to_string(i) + "_" + std::to_string(j);
+                            dart::dynamics::BodyNodePtr segment_to_check = rob->skeleton()->getBodyNode(leg_segment);
+                            if (col_res.inCollision(segment_to_check)){
+                                _contacts[i].push_back(col_res.inCollision(segment_to_check));
+                                break;
+                            }
+
+                            if (j == 8){
+                                _contacts[i].push_back(0);
+                            }
+                        }
                     }
                 }
             }

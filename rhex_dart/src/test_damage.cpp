@@ -25,7 +25,6 @@ int main(int argc, char** argv)
 
 
     damages.push_back(rhex_dart::RhexDamage("leg_removal", "1"));
-    // damages.push_back(rhex_dart::RhexDamage("leg_removal", "5"));
 	
 
     // loads the robot with name Rhex tels it that it is not a URDF file and give it the blank damages
@@ -33,7 +32,7 @@ int main(int argc, char** argv)
     auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[1], "Rhex", false, damages);
 
     // sets the control vector up
-    // 0.2 0.5 0 0.4 0.5 0.25 0.5 0.25 0.5 0.5 0 0.5 0
+    // ./waf && ./build/test raised.skel 1 0.1 0 0.3 0.85 0.6 0 0.15 1 0.75 0.5 0.8
     std::vector<double> ctrl = {atof(argv[2]), atof(argv[3]), atof(argv[4]),
                                 atof(argv[5]), atof(argv[6]), atof(argv[7]),
                                 atof(argv[8]), atof(argv[9]), atof(argv[10]),
