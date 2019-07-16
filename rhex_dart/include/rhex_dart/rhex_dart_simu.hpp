@@ -54,7 +54,7 @@ namespace rhex_dart {
             using rhex_control_t = RhexControlBuehler;
             using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
             // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
-            using descriptors_t = boost::fusion::vector<descriptors::DutyCycle>;
+            using descriptors_t = boost::fusion::vector<descriptors::DutyCycle, descriptors::SpecificResistance, descriptors::AvgCOMVelocities>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };
 
@@ -68,7 +68,7 @@ namespace rhex_dart {
         using descriptors_t = typename boost::mpl::if_<boost::fusion::traits::is_sequence<Descriptors>, Descriptors, boost::fusion::vector<Descriptors>>::type;
         using viz_t = typename boost::mpl::if_<boost::fusion::traits::is_sequence<Visualizations>, Visualizations, boost::fusion::vector<Visualizations>>::type;
 
-        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot) : _covered_distance(0.0),
+        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot, double friction) : _covered_distance(0.0),
                                                                           _energy(0.0),
                                                                           _world(std::make_shared<dart::simulation::World>()),
                                                                           _controller(ctrl, robot),
@@ -76,10 +76,10 @@ namespace rhex_dart {
                                                                           _desc_period(2),
                                                                           _break(false)
         {
-			setup(ctrl, robot);
+            setup(ctrl, robot, friction);
         }
 
-        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot, std::vector<rhex_dart::RhexDamage> damages) : _covered_distance(0.0),
+        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot, double friction, std::vector<rhex_dart::RhexDamage> damages) : _covered_distance(0.0),
                                                                           _energy(0.0),
                                                                           _world(std::make_shared<dart::simulation::World>()),
                                                                           _controller(ctrl, robot, damages),
@@ -87,10 +87,10 @@ namespace rhex_dart {
                                                                           _desc_period(2),
                                                                           _break(false)
         {
-			setup(ctrl, robot);
+            setup(ctrl, robot, friction);
         }
         
-        void setup(const std::vector<double>& ctrl, robot_t robot)
+        void setup(const std::vector<double>& ctrl, robot_t robot, double friction = 1.0)
         {
         
         	_world->getConstraintSolver()->setCollisionDetector(dart::collision::DARTCollisionDetector::create());
@@ -99,7 +99,7 @@ namespace rhex_dart {
             // set position of rhex
             _robot->skeleton()->setPosition(6, 0.1);
 
-            _add_floor();
+            _add_floor(friction);
 
             _world->addSkeleton(_robot->skeleton());
             _world->setTimeStep(0.005);
@@ -432,7 +432,7 @@ namespace rhex_dart {
             return stabilized;
         }
 
-        void _add_floor()
+        void _add_floor(double friction = 1.0)
         {
             // We do not want 2 floors!
             if (_world->getSkeleton("floor") != nullptr)
@@ -442,7 +442,7 @@ namespace rhex_dart {
 
             // Give the floor a body
             dart::dynamics::BodyNodePtr body = floor->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
-
+            body->setFrictionCoeff(friction);
             // Give the body a shape
             double floor_width = 50.0;
             double floor_height = 0.1;

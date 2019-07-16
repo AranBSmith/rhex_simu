@@ -79,6 +79,70 @@ namespace rhex_dart {
             std::map<size_t, std::vector<size_t>> _contacts;
         };
 
+        // describes endurance, the lower, the better.
+        struct SpecificResistance : public DescriptorBase {
+        public:
+            SpecificResistance()
+            {
+                _powers = std::vector<double>();
+                _velocities = std::vector<double>();
+            }
+
+            template <typename Simu, typename robot>
+            void operator()(Simu& simu, std::shared_ptr<robot> rob, const Eigen::Vector6d& init_trans)
+            {
+
+                _mass = rob->skeleton()->getMass();
+                _gravity = rob->skeleton()->getGravity();
+
+                Eigen::Vector3d velocity = rob->skeleton()->getCOMLinearVelocity();
+
+                // this is the direction rhex walks in
+                _velocities.push_back(velocity[0]);
+                Eigen::VectorXd state = rob->skeleton()->getForces().array().abs() * simu.world()->getTimeStep();
+                _powers.push_back(state.sum());
+
+            }
+
+            void get(double& result)
+            {
+                double avg_vel = std::accumulate(_velocities.begin(), _velocities.end(), 0.0) / _velocities.size();
+                double avg_pow = std::accumulate(_powers.begin(), _powers.end(), 0.0) / _powers.size();
+
+                result = -1 * avg_pow / (_mass * _gravity[2] * avg_vel);
+            }
+
+        protected:
+            std::vector<double> _velocities;
+            std::vector<double> _powers;
+            double _mass;
+            Eigen::Vector3d _gravity;
+        };
+
+        struct AvgCOMVelocities : public DescriptorBase {
+        public:
+            AvgCOMVelocities(){}
+
+            template <typename Simu, typename robot>
+            void operator()(Simu& simu, std::shared_ptr<robot> rob, const Eigen::Vector6d& init_trans)
+            {
+                Eigen::Vector3d velocity = rob->skeleton()->getCOMLinearVelocity();
+                _vel_x.push_back(velocity[0]);
+                _vel_y.push_back(velocity[1]);
+                _vel_z.push_back(velocity[2]);
+            }
+
+            void get(Eigen::Vector3d& results)
+            {
+                results[0] = std::accumulate(_vel_x.begin(), _vel_x.end(), 0.0) / _vel_x.size();
+                results[1] = std::accumulate(_vel_y.begin(), _vel_y.end(), 0.0) / _vel_y.size();
+                results[2] = std::accumulate(_vel_z.begin(), _vel_z.end(), 0.0) / _vel_z.size();
+            }
+
+        protected:
+            std::vector<double> _vel_x, _vel_y, _vel_z;
+        };
+
         struct PositionTraj : public DescriptorBase {
         public:
             PositionTraj() {}

@@ -23,19 +23,22 @@ int main(int argc, char** argv)
 
     // loads the robot with name Rhex tels it that it is not a URDF file and give it the blank damages
     // raised.skel, skinny.skel, Rhex8.skel
-    auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[1], "Rhex", false, brk);
+    auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[2], "Rhex", false, brk);
 
     // sets the control vector up
-    // example: ./waf && ./build/test raised.skel 1 0.1 0 0.3 0.85 0.6 0 0.15 1 0.75 0.5 0.8
-    std::vector<double> ctrl = {atof(argv[2]), atof(argv[3]), atof(argv[4]),
-                                atof(argv[5]), atof(argv[6]), atof(argv[7]),
-                                atof(argv[8]),atof(argv[9]),atof(argv[10]),
-                                atof(argv[11]),atof(argv[12]),atof(argv[13])};
+    // example: ./waf && ./build/test 1 raised.skel 1 0.1 0 0.3 0.85 0.6 0 0.15 1 0.75 0.5 0.8
+    std::vector<double> ctrl = {atof(argv[3]), atof(argv[4]), atof(argv[5]),
+                                atof(argv[6]), atof(argv[7]), atof(argv[8]),
+                                atof(argv[9]),atof(argv[10]),atof(argv[11]),
+                                atof(argv[12]),atof(argv[13]),atof(argv[14])};
 
-    using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle, rhex_dart::descriptors::BodyOrientation>;
+    using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle,
+                    rhex_dart::descriptors::BodyOrientation,
+                    rhex_dart::descriptors::SpecificResistance,
+                    rhex_dart::descriptors::AvgCOMVelocities>;
 
     using viz_t = boost::fusion::vector<rhex_dart::visualizations::HeadingArrow, rhex_dart::visualizations::PointingArrow<Params>>;
-    rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot);
+    rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot, atof(argv[1]));
 
 #ifdef GRAPHIC
     simu.fixed_camera(Eigen::Vector3d(3, 0, 0.5));
@@ -62,6 +65,19 @@ int main(int argc, char** argv)
     std::cout << "Body Orientation" << std::endl;
     for (size_t i = 0; i < vv.size(); i++) {
         std::cout << vv[i] << " ";
+    }
+    std::cout << std::endl;
+
+    double sr;
+    simu.get_descriptor<rhex_dart::descriptors::SpecificResistance>(sr);
+    std::cout << "Specific Resistance: " << sr << std::endl;
+
+    Eigen::Vector3d vels;
+    simu.get_descriptor<rhex_dart::descriptors::AvgCOMVelocities>(vels);
+
+    std::cout << "Avg COM Velocities" << std::endl;
+    for (size_t i = 0; i < vels.size(); i++) {
+        std::cout << vels[i] << " ";
     }
     std::cout << std::endl;
 
