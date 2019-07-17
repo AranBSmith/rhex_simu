@@ -119,6 +119,7 @@ namespace rhex_dart {
             Eigen::Vector3d _gravity;
         };
 
+        // average velocity in xyz directions
         struct AvgCOMVelocities : public DescriptorBase {
         public:
             AvgCOMVelocities(){}

@@ -124,7 +124,6 @@ namespace rhex_dart {
                 _target_positions[i] -= 2 * PI * _compensatory_count[i];
 
                 // similarly, if the feedback is more than 2 PI ahead of the signal, we dont want the leg to wait
-                // which influences other legs in a negative way because of phase.
                 diff = feedback[i] - _target_positions[i];
 
                 if (diff > 2*(3*PI)/4)
