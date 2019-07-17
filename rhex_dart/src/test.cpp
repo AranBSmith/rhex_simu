@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <rhex_dart/rhex_dart_simu.hpp>
 
+#define CTRL_SIZE 30
+
 struct Params {
     static constexpr double radius() { return 0.01; }
 
@@ -21,16 +23,23 @@ int main(int argc, char** argv)
     // using the same model as the hexapod and so the robot has a damages parameter but is set to 0
     std::vector<rhex_dart::RhexDamage> brk = {};
 
+    assert(argc == 30);
     // loads the robot with name Rhex tels it that it is not a URDF file and give it the blank damages
     // raised.skel, skinny.skel, Rhex8.skel
     auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[2], "Rhex", false, brk);
 
-    // sets the control vector up
-    // example: ./waf && ./build/test 1 raised.skel 1 0.1 0 0.3 0.85 0.6 0 0.15 1 0.75 0.5 0.8
+    // sets the control vector up, some examples:
+    // ./waf && ./build/test 1 raised.skel 0.8 0.7 0.05 0.3 0.5 0.5 0.5 0.5 0.5 0.5 0.25 0.25 0.25 0.25 0.25 0.25 0 0 0 0 0 0 0.5 0 0.5 0 0.5
+    // ./waf && ./build/test 1 raised.skel 0.8 0.7 0.05 0.5 0.3 0.6 0.1 0.9 0.1 0.3 0.25 0.25 0.25 0.25 0.25 0.25 0 0 0 0 0 0 0.5 0 0 0 0
     std::vector<double> ctrl = {atof(argv[3]), atof(argv[4]), atof(argv[5]),
                                 atof(argv[6]), atof(argv[7]), atof(argv[8]),
                                 atof(argv[9]),atof(argv[10]),atof(argv[11]),
-                                atof(argv[12]),atof(argv[13]),atof(argv[14])};
+                                atof(argv[12]),atof(argv[13]),atof(argv[14]),
+                                atof(argv[15]),atof(argv[16]),atof(argv[17]),
+                                atof(argv[18]),atof(argv[19]),atof(argv[20]),
+                                atof(argv[21]),atof(argv[22]),atof(argv[23]),
+                                atof(argv[24]),atof(argv[25]),atof(argv[26]),
+                                atof(argv[27]),atof(argv[28]),atof(argv[29])};
 
     using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle,
                     rhex_dart::descriptors::BodyOrientation,

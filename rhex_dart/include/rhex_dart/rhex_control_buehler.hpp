@@ -7,12 +7,13 @@
 #include <rhex_controller/rhex_controller_buehler.hpp>
 #define PI 3.14159265
 
-#define PROP 5
-#define INTEG 20
-#define DIFF 5
-#define CPG_SIZE 6
-#define FORCE_LIMIT 3
-#define IGNORE 1000
+#define PROP 15         // proportional gain
+#define INTEG 15        // integral gain
+#define DIFF 15         // differential gain
+
+#define CPG_SIZE 6      // no. outputs from the controller
+#define FORCE_LIMIT 3   // +- torque limit
+#define IGNORE 1000     // term used to ignore legs
 
 namespace rhex_dart {
 
@@ -22,6 +23,7 @@ namespace rhex_dart {
 
         RhexControlBuehler() {}
 
+        // TODO: default empty damages, handle appropriately
         RhexControlBuehler(const std::vector<double>& ctrl, robot_t robot)
             : _robot(robot)
         {
@@ -31,7 +33,6 @@ namespace rhex_dart {
             _feedback = std::vector<double>(_leg_count, 0.0);
             _compensatory_count = std::vector<int>(_leg_count, 0);
         }
-
 
         RhexControlBuehler(const std::vector<double>& ctrl, robot_t robot, std::vector<rhex_dart::RhexDamage> damages)
             : _robot(robot), _damages(damages)
@@ -88,6 +89,7 @@ namespace rhex_dart {
             _target_positions = _cpg.pos(t);
             
             Eigen::VectorXd current_positions = _robot->skeleton()->getPositions();
+
 //            std::cout<< "current positions: " ;
 //            for (size_t i = 0; i < current_positions.size(); ++i){
 //                std::cout << current_positions[i] << " ";
@@ -126,7 +128,8 @@ namespace rhex_dart {
                 // similarly, if the feedback is more than 2 PI ahead of the signal, we dont want the leg to wait
                 diff = feedback[i] - _target_positions[i];
 
-                if (diff > 2*(3*PI)/4)
+                // TODO: reasoning
+                if (diff > 2 * (3 * PI) / 4)
                     _target_positions[i] +=  2 * PI;
             }
 
@@ -149,8 +152,9 @@ namespace rhex_dart {
             std::vector<double> pid_output = _pid.get_output();
 
             std::vector<double> tcommands(6,0);
-            //skip_count = 0;
-            for (size_t i = 0; i < CPG_SIZE; ++i){
+            for (size_t i = 0; i < CPG_SIZE; ++i)
+            {
+                // for those legs not removed, add the command
                 if (!std::binary_search(_removed_legs.begin(), _removed_legs.end(), i))
                 {
                     if (pid_output[i] > FORCE_LIMIT)
@@ -161,21 +165,22 @@ namespace rhex_dart {
                         tcommands[i] = pid_output[i];
                 }
 
+                // indicate removed legs with an ignore flag
                 else
                 {
-                    //skip_count += 1;
                     tcommands[i] = IGNORE;
                 }
             }
-
 
             // remove ignored values to get the right number of dof commands for the present body
             int j = 0;
             size_t dof = _robot->skeleton()->getNumDofs();
             Eigen::VectorXd commands = Eigen::VectorXd::Zero(dof);
 
-            for(size_t i = 0; i < CPG_SIZE; ++i){
-                if(tcommands[i] != IGNORE){
+            for(size_t i = 0; i < CPG_SIZE; ++i)
+            {
+                if(tcommands[i] != IGNORE)
+                {
                     commands[j + 6] = tcommands[i];
                     ++j;
                 }

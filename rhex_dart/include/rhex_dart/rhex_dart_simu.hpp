@@ -52,8 +52,8 @@ namespace rhex_dart {
         // defaults
         struct defaults {
             using rhex_control_t = RhexControlBuehler;
-            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
-            // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
+            // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
+            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle, descriptors::SpecificResistance, descriptors::AvgCOMVelocities>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };
@@ -120,6 +120,12 @@ namespace rhex_dart {
             _osg_viewer.addWorldNode(_osg_world_node);
 			_osg_viewer.setUpViewInWindow(0, 0, 640, 480);
 
+//            std::make_shared<dart::gui::osg::GridVisual> grid = new dart::gui::osg::GridVisual();
+
+//            _osg_viewer.getImGuiHandler().addWidget(
+//              std::make_shared<dart::gui::osg::ImGuiWidget>(_osg_viewer, _osg_world_node, grid));
+
+//            _osg_viewer.addAttachment(grid);
 
 // full-screen
 // _osg_viewer.setUpViewOnSingleScreen();

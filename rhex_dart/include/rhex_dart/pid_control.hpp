@@ -12,7 +12,6 @@ namespace rhex_dart {
 
         PIDControl(double p, double i, double d)
         {
-
             _Kp = p;
             _Ki = i;
             _Kd = d;
@@ -35,7 +34,8 @@ namespace rhex_dart {
             _last_time = 0.0;
         }
 
-        void update(const std::vector<double>& feedback_values, double time){
+        void update(const std::vector<double>& feedback_values, double time)
+        {
             // Calculates PID value for given reference feedback
             // u(t) = K_p e(t) + K_i \int_{0}^{t} e(t)dt + K_d {de}/{dt}
             std::vector<double> error(6, 0);
@@ -46,7 +46,8 @@ namespace rhex_dart {
                 _delta_time = 0; // cant be less than zero, happens at start of sim.
             _last_time = time;
 
-            for(size_t i = 0; i < 6; ++i){
+            for(size_t i = 0; i < 6; ++i)
+            {
 
                 error[i] = _set_point[i] - feedback_values[i];
 
@@ -56,11 +57,13 @@ namespace rhex_dart {
 
                 _Iterm[i] += error[i] * _delta_time;
 
-                if (_Iterm[i] < -_windup_guard){
+                if (_Iterm[i] < -_windup_guard)
+                {
                     //std::cout<< "hit the negative iterm windup guard" << std::endl;
                     _Iterm[i] = -_windup_guard;
                 }
-                else if (_Iterm[i] > _windup_guard){
+                else if (_Iterm[i] > _windup_guard)
+                {
                     //std::cout<< "hit the positive iterm windup guard" << std::endl;
                     _Iterm[i] = _windup_guard;
                 }
@@ -103,15 +106,6 @@ namespace rhex_dart {
 
         void set_windup(double windup)
         {
-            /* Integral windup, also known as integrator windup or reset windup,
-            refers to the situation in a PID feedback controller where
-            a large change in setpoint occurs (say a positive change)
-            and the integral terms accumulates a significant error
-            during the rise (windup), thus overshooting and continuing
-            to increase as this accumulated error is unwound
-            (offset by errors in the other direction).
-            The specific problem is the excess overshooting.
-            */
             _windup_guard = windup;
         }
 
