@@ -164,7 +164,10 @@ namespace rhex_dart {
     protected:
         dart::dynamics::SkeletonPtr _load_model(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& packages, bool is_urdf_string)
         {
-         // Remove spaces from beginning of the filename/path
+            // useful for knowing if you are running the latest version
+            std::cout << "Version: 1807" << std::endl;
+
+            // Remove spaces from beginning of the filename/path
             std::string model_file = filename;
             model_file.erase(model_file.begin(), std::find_if(model_file.begin(), model_file.end(), [](int ch) {
                     return !std::isspace(ch);
@@ -199,7 +202,6 @@ namespace rhex_dart {
                         tmp_skel = world->getSkeleton(_robot_name);
                     }
 
-                    std::cout << "Enforcing positions" << std::endl;
                     for (size_t i = 0; i < tmp_skel->getNumJoints(); ++i) {
                         tmp_skel->getJoint(i)->setPositionLimitEnforced(true);
                     }

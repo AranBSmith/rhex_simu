@@ -12,7 +12,7 @@
 #define DIFF 15         // differential gain
 
 #define CPG_SIZE 6      // no. outputs from the controller
-#define FORCE_LIMIT 3   // +- torque limit
+#define FORCE_LIMIT 4   // +- torque limit
 #define IGNORE 1000     // term used to ignore legs
 
 namespace rhex_dart {
@@ -110,6 +110,12 @@ namespace rhex_dart {
                 else
                     feedback[i] = current_positions[i + 6 - skip_count];
             }
+
+//            std::cout << "Target/cpg/setpoint positions: " ;
+//            for (size_t i = 0; i < 6; ++i){
+//                std::cout << _target_positions[i] << " ";
+//            }
+//            std::cout << std::endl;
 
             // if the target is one or more full rotations ahead, subtract the appropriate amount of rotations.
             // this needs to be sustained for the rest of the simulation as the signal will never decrease.
