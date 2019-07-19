@@ -60,11 +60,11 @@ namespace rhex_dart {
             Eigen::VectorXd current_positions = _robot->skeleton()->getPositions();
 
             _pid.clear();
-            _pid.set_Kp(ctrl[0] * PROP);
-            _pid.set_Ki(ctrl[1] * INTEG);
-            _pid.set_Kd(ctrl[2] * DIFF);
+            _pid.set_Kp(PROP);
+            _pid.set_Ki(INTEG);
+            _pid.set_Kd(0);
 
-            std::vector<double>::const_iterator first = ctrl.begin() + 3;
+            std::vector<double>::const_iterator first = ctrl.begin();
             std::vector<double>::const_iterator last = ctrl.begin() + ctrl.size();
             std::vector<double> cpg_ctrl(first, last);
 
@@ -145,7 +145,7 @@ namespace rhex_dart {
 //            }
 //            std::cout << std::endl;
 
-//            std::cout << "feedback/current positions: " ;
+ //           std::cout << "feedback/current positions: " ;
 
 //            for (size_t i = 0; i < CPG_SIZE; ++i){
 //                std::cout << feedback[i] << " ";
