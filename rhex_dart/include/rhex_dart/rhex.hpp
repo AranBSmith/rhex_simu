@@ -165,7 +165,7 @@ namespace rhex_dart {
         dart::dynamics::SkeletonPtr _load_model(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& packages, bool is_urdf_string)
         {
             // useful for knowing if you are running the latest version
-            std::cout << "Version: 1907" << std::endl;
+            std::cout << "Version: 1907.2" << std::endl;
 
             // Remove spaces from beginning of the filename/path
             std::string model_file = filename;
