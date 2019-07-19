@@ -62,7 +62,7 @@ namespace rhex_dart {
             _pid.clear();
             _pid.set_Kp(ctrl[0] * PROP);
             _pid.set_Ki(ctrl[1] * INTEG);
-            _pid.set_Kd(ctrl[3] * DIFF);
+            _pid.set_Kd(ctrl[2] * DIFF);
 
             std::vector<double>::const_iterator first = ctrl.begin() + 3;
             std::vector<double>::const_iterator last = ctrl.begin() + ctrl.size();
