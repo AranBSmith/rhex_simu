@@ -53,7 +53,7 @@ namespace rhex_dart {
         struct defaults {
             using rhex_control_t = RhexControlBuehler;
             // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
-            using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::TurnOver>;
+            using safety_measures_t = boost::fusion::vector<safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle, descriptors::SpecificResistance, descriptors::AvgCOMVelocities>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };
@@ -92,6 +92,7 @@ namespace rhex_dart {
                     _add_hill();
                     break;
                 case 2:
+                    _add_stairs();
                     break;
                 case 3:
                     break;
@@ -459,7 +460,6 @@ namespace rhex_dart {
             Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
             tf.translation() = Eigen::Vector3d(0.0, 0.0, -floor_height / 2.0);
             fbody->getParentJoint()->setTransformFromParentBodyNode(tf);
-            fbody->getParentJoint()->setPosition(1, 45);
 
             _world->addSkeleton(floor);
 
@@ -490,6 +490,38 @@ namespace rhex_dart {
             hbody->getParentJoint()->setTransformFromParentBodyNode(tf);
 
             _world->addSkeleton(hill);
+        }
+
+        void _add_stairs(double friction = 1.0)
+        {
+            // TODO: protect from duplicate stairs
+
+            // Give the body a shape
+            double step_x_width = 0.2;
+            double step_y_width = 5;
+            double step_height = 0.2;
+
+            for (size_t i = 0; i < 100; ++i)
+            {
+                dart::dynamics::SkeletonPtr step = dart::dynamics::Skeleton::create("step");
+
+                // Give the floor a body
+                dart::dynamics::BodyNodePtr sbody = step->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+                sbody->setFrictionCoeff(friction);
+
+                auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(step_x_width, step_y_width, step_height));
+
+                auto box_node = sbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+                box_node->getVisualAspect()->setColor(dart::Color::Green());
+
+                // Put the body into position
+                Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+                tf.translation() = Eigen::Vector3d(1.0 + (i*step_x_width), 0.0, i * (step_height));
+                sbody->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+                _world->addSkeleton(step);
+            }
         }
 
         int _world_option;
