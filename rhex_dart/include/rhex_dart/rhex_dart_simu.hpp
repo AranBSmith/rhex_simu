@@ -68,32 +68,16 @@ namespace rhex_dart {
         using descriptors_t = typename boost::mpl::if_<boost::fusion::traits::is_sequence<Descriptors>, Descriptors, boost::fusion::vector<Descriptors>>::type;
         using viz_t = typename boost::mpl::if_<boost::fusion::traits::is_sequence<Visualizations>, Visualizations, boost::fusion::vector<Visualizations>>::type;
 
-        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot, double friction) : _covered_distance(0.0),
-                                                                          _energy(0.0),
-                                                                          _world(std::make_shared<dart::simulation::World>()),
-                                                                          _controller(ctrl, robot),
-                                                                          _old_index(0),
-                                                                          _desc_period(2),
-                                                                          _break(false)
-        {
-            setup(ctrl, robot, friction);
-        }
-
-        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot, double friction, std::vector<rhex_dart::RhexDamage> damages) : _covered_distance(0.0),
+        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot, int world_option = 1, double friction = 1.0, std::vector<rhex_dart::RhexDamage> damages = {}) : _covered_distance(0.0),
                                                                           _energy(0.0),
                                                                           _world(std::make_shared<dart::simulation::World>()),
                                                                           _controller(ctrl, robot, damages),
+                                                                          _world_option(world_option),
                                                                           _old_index(0),
                                                                           _desc_period(2),
                                                                           _break(false)
         {
-            setup(ctrl, robot, friction);
-        }
-        
-        void setup(const std::vector<double>& ctrl, robot_t robot, double friction = 1.0)
-        {
-        
-        	_world->getConstraintSolver()->setCollisionDetector(dart::collision::DARTCollisionDetector::create());
+            _world->getConstraintSolver()->setCollisionDetector(dart::collision::DARTCollisionDetector::create());
             _robot = robot;
 
             // set position of rhex
@@ -101,24 +85,35 @@ namespace rhex_dart {
 
             _add_floor(friction);
 
+            switch(_world_option) {
+                case 0: // just a flat world
+                    break;
+                case 1: // flat world with a round hill, make sure to turn off height safety measure!
+                    _add_hill();
+                    break;
+                case 2:
+                    break;
+                case 3:
+                    break;
+            }
+
+            if(_world_option == 1)
+                _add_hill(friction);
+
             _world->addSkeleton(_robot->skeleton());
             _world->setTimeStep(0.005);
 
             _controller.set_parameters(ctrl);
 
-             //_stabilize_robot(true);
-             //_world->setTimeStep(0.015);
-             _controller.update(_world->getTime());
+            _controller.update(_world->getTime());
 
             _world->setTime(0.0);
-
-
 
 #ifdef GRAPHIC
             _fixed_camera = false;
             _osg_world_node = new dart::gui::osg::WorldNode(_world);
             _osg_viewer.addWorldNode(_osg_world_node);
-			_osg_viewer.setUpViewInWindow(0, 0, 640, 480);
+            _osg_viewer.setUpViewInWindow(0, 0, 640, 480);
 
 //            std::make_shared<dart::gui::osg::GridVisual> grid = new dart::gui::osg::GridVisual();
 
@@ -131,9 +126,7 @@ namespace rhex_dart {
 // _osg_viewer.setUpViewOnSingleScreen();
 #endif
         }
-
-
-
+        
         ~RhexDARTSimu() {}
 
         void run(double duration = 5.0, bool continuous = false, bool chain = false)
@@ -144,7 +137,6 @@ namespace rhex_dart {
             size_t index = _old_index;
             Eigen::Vector3d init_pos = rob->pos();
 
-            // TO-DO: maybe we need better solution for this/reset them?
             static Eigen::Vector6d init_trans = rob->pose();
 
 #ifdef GRAPHIC
@@ -178,8 +170,11 @@ namespace rhex_dart {
                 if (!_fixed_camera) {
                     auto COM = rob->skeleton()->getCOM();
                     // set camera to follow rhex
+//                    _osg_viewer.getCameraManipulator()->setHomePosition(
+//                        osg::Vec3d(3, -3, 0.5), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
+
                     _osg_viewer.getCameraManipulator()->setHomePosition(
-                        osg::Vec3d(3, -3, 0.5), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
+                        osg::Vec3d(-1, -3, 2), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
                     _osg_viewer.home();
                 }
                 // process next frame
@@ -447,23 +442,57 @@ namespace rhex_dart {
             dart::dynamics::SkeletonPtr floor = dart::dynamics::Skeleton::create("floor");
 
             // Give the floor a body
-            dart::dynamics::BodyNodePtr body = floor->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
-            body->setFrictionCoeff(friction);
+            dart::dynamics::BodyNodePtr fbody = floor->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+            fbody->setFrictionCoeff(friction);
+
             // Give the body a shape
             double floor_width = 50.0;
             double floor_height = 0.1;
+
             auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(floor_width, floor_width, floor_height));
-            auto box_node = body->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+            auto box_node = fbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
             box_node->getVisualAspect()->setColor(dart::Color::Gray());
 
             // Put the body into position
             Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
             tf.translation() = Eigen::Vector3d(0.0, 0.0, -floor_height / 2.0);
-            body->getParentJoint()->setTransformFromParentBodyNode(tf);
-            
+            fbody->getParentJoint()->setTransformFromParentBodyNode(tf);
+            fbody->getParentJoint()->setPosition(1, 45);
+
             _world->addSkeleton(floor);
+
         }
 
+        void _add_hill(double friction = 1.0)
+        {
+            if (_world->getSkeleton("hill") != nullptr)
+                return;
+
+            dart::dynamics::SkeletonPtr hill = dart::dynamics::Skeleton::create("hill");
+
+            // give the hill a body
+            dart::dynamics::BodyNodePtr hbody = hill->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+            hbody->setFrictionCoeff(friction);
+
+            // Give the body a shape
+            double hill_radius = 5.0;
+            auto sphere = std::make_shared<dart::dynamics::SphereShape>(hill_radius);
+
+            auto sphere_node = hbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(sphere);
+
+            sphere_node->getVisualAspect()->setColor(dart::Color::Blue());
+
+            // Put the body into position
+            Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+            tf.translation() = Eigen::Vector3d(3.2, 0.0, -4.0);
+            hbody->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+            _world->addSkeleton(hill);
+        }
+
+        int _world_option;
         robot_t _robot;
         Eigen::Vector3d _final_pos;
         Eigen::Vector3d _final_rot;

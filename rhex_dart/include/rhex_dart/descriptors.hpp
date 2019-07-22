@@ -49,7 +49,7 @@ namespace rhex_dart {
                 for (size_t i = 0; i < 6; ++i) {
                     if (rob->is_broken(i)) {
                         _contacts[i].push_back(0);
-                        std::cout<<"pushing back 0" <<std::endl;
+                        // std::cout<<"pushing back 0" <<std::endl;
                     }
                     else {
                         for (size_t j = 1; j <= 8; ++j) {

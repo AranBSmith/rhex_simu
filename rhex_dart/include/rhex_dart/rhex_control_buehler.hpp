@@ -23,18 +23,7 @@ namespace rhex_dart {
 
         RhexControlBuehler() {}
 
-        // TODO: default empty damages, handle appropriately
-        RhexControlBuehler(const std::vector<double>& ctrl, robot_t robot)
-            : _robot(robot)
-        {
-            set_parameters(ctrl);
-            _leg_count = CPG_SIZE;
-
-            _feedback = std::vector<double>(_leg_count, 0.0);
-            _compensatory_count = std::vector<int>(_leg_count, 0);
-        }
-
-        RhexControlBuehler(const std::vector<double>& ctrl, robot_t robot, std::vector<rhex_dart::RhexDamage> damages)
+        RhexControlBuehler(const std::vector<double>& ctrl, robot_t robot, std::vector<rhex_dart::RhexDamage> damages = {})
             : _robot(robot), _damages(damages)
         {
             set_parameters(ctrl);
@@ -51,8 +40,8 @@ namespace rhex_dart {
                 leg+=1;
             }
 
-            _feedback = std::vector<double>(_leg_count, 0.0);
-            _compensatory_count = std::vector<int>(_leg_count, 0);
+            _feedback = std::vector<double>(CPG_SIZE, 0.0);
+            _compensatory_count = std::vector<int>(CPG_SIZE, 0);
         }
 
         void set_parameters(const std::vector<double>& ctrl)
@@ -83,6 +72,7 @@ namespace rhex_dart {
 
         void update(double t)
         {
+            std::cout<<"============="<<std::endl;
             if (_robot == nullptr)
                 return;
 
@@ -90,18 +80,24 @@ namespace rhex_dart {
             
             Eigen::VectorXd current_positions = _robot->skeleton()->getPositions();
 
-//            std::cout<< "current positions: " ;
-//            for (size_t i = 0; i < current_positions.size(); ++i){
-//                std::cout << current_positions[i] << " ";
-//            }
-//            std::cout<<std::endl;
+            std::cout<< "current positions: " ;
+            for (size_t i = 0; i < _leg_count; ++i){
+                std::cout << current_positions[i+6] << " ";
+            }
+            std::cout<<std::endl;
+
+            std::cout<< "removed legs are: " ;
+            for (size_t i = 0; i < _removed_legs.size(); ++i){
+                std::cout << _removed_legs[i] << " ";
+            }
+            std::cout<<std::endl;
 
             std::vector<double> feedback(CPG_SIZE, 0);
             int skip_count = 0;
             for (size_t i = 0; i < CPG_SIZE; ++i)
             {
                 // _removed_legs is sorted list so binary search
-                if (std::binary_search(_removed_legs.begin(), _removed_legs.end(), i+1))
+                if (std::binary_search(_removed_legs.begin(), _removed_legs.end(), i))
                 {
                     feedback[i] = 0;
                     skip_count+=1;
@@ -111,11 +107,17 @@ namespace rhex_dart {
                     feedback[i] = current_positions[i + 6 - skip_count];
             }
 
-//            std::cout << "Target/cpg/setpoint positions: " ;
-//            for (size_t i = 0; i < 6; ++i){
-//                std::cout << _target_positions[i] << " ";
-//            }
-//            std::cout << std::endl;
+            std::cout << "feedback/current positions: " ;
+            for (size_t i = 0; i < CPG_SIZE; ++i){
+               std::cout << feedback[i] << " ";
+            }
+            std::cout << std::endl;
+
+            std::cout << "Target/cpg/setpoint positions: " ;
+            for (size_t i = 0; i < 6; ++i){
+                std::cout << _target_positions[i] << " ";
+            }
+            std::cout << std::endl;
 
             // if the target is one or more full rotations ahead, subtract the appropriate amount of rotations.
             // this needs to be sustained for the rest of the simulation as the signal will never decrease.
@@ -125,6 +127,8 @@ namespace rhex_dart {
 
                 while(diff >= 2*PI)
                 {
+                    std::cout << "hit first condition for: " << i << std::endl;
+
                     _compensatory_count[i] += 1;
                     diff = _target_positions[i] - 2 * PI * _compensatory_count[i] - feedback[i];
                 }
@@ -135,22 +139,25 @@ namespace rhex_dart {
                 diff = feedback[i] - _target_positions[i];
 
                 // TODO: reasoning
-                if (diff > 2 * (3 * PI) / 4)
+                if (diff > (3 * PI) / 2){
+                    std::cout << "hit condition for: " << i << std::endl;
                     _target_positions[i] +=  2 * PI;
+                }
             }
 
-//            std::cout << "Target/cpg/setpoint positions: " ;
-//            for (size_t i = 0; i < 6; ++i){
-//                std::cout << _target_positions[i] << " ";
-//            }
-//            std::cout << std::endl;
 
- //           std::cout << "feedback/current positions: " ;
+            std::cout << "Target/cpg/setpoint positions: " ;
+            for (size_t i = 0; i < 6; ++i){
+                std::cout << _target_positions[i] << " ";
+            }
+            std::cout << std::endl;
 
-//            for (size_t i = 0; i < CPG_SIZE; ++i){
-//                std::cout << feedback[i] << " ";
-//            }
-//            std::cout << std::endl;
+            std::cout << "feedback/current positions: " ;
+
+            for (size_t i = 0; i < CPG_SIZE; ++i){
+                std::cout << feedback[i] << " ";
+            }
+            std::cout << std::endl;
 
             _pid.set_points(_target_positions);
             _pid.update(feedback, t);
