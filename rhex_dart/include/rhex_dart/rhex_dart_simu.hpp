@@ -95,6 +95,7 @@ namespace rhex_dart {
                     _add_stairs();
                     break;
                 case 3:
+                    _add_slope();
                     break;
             }
 
@@ -465,6 +466,39 @@ namespace rhex_dart {
 
         }
 
+        void _add_slope(double friction = 1.0)
+        {
+            // We do not want 2 floors!
+            if (_world->getSkeleton("slope") != nullptr)
+                return;
+
+            dart::dynamics::SkeletonPtr slope = dart::dynamics::Skeleton::create("slope");
+
+            // Give the slope a body
+            dart::dynamics::BodyNodePtr sbody = slope->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+            sbody->setFrictionCoeff(friction);
+
+            // Give the body a shape
+            double slope_width = 50.0;
+            double slope_height = 0.1;
+
+            auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(slope_width, slope_width, slope_height));
+
+            auto box_node = sbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+            box_node->getVisualAspect()->setColor(dart::Color::Blue());
+
+            // Put the body into position
+            Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+            tf.translation() = Eigen::Vector3d(0.0, 0.0, -slope_height / 2.0);
+            tf.linear() = Eigen::Quaterniond(45.0, 1.0, 0.0, 0.0).toRotationMatrix();
+
+            sbody->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+            _world->addSkeleton(slope);
+
+        }
+
         void _add_hill(double friction = 1.0)
         {
             if (_world->getSkeleton("hill") != nullptr)
@@ -517,7 +551,7 @@ namespace rhex_dart {
 
                 // Put the body into position
                 Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
-                tf.translation() = Eigen::Vector3d(1.0 + (i*step_x_width), 0.0, i * (step_height));
+                tf.translation() = Eigen::Vector3d(0.4 + (i*step_x_width), 0.0, i * (step_height));
                 sbody->getParentJoint()->setTransformFromParentBodyNode(tf);
 
                 _world->addSkeleton(step);
