@@ -18,6 +18,7 @@ struct Params {
     static std::string body_name() { return "BodyNode"; }
 };
 
+
 int main(int argc, char** argv)
 {
     // using the same model as the hexapod and so the robot has a damages parameter but is set to 0
