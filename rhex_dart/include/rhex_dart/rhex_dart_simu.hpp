@@ -156,7 +156,7 @@ namespace rhex_dart {
                 _energy += state.sum();
                 
                 // update safety measures
-                if (_world->getTime() >= 1)
+                if (_world->getTime() >= 2)
                     boost::fusion::for_each(_safety_measures, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
                 // update visualizations
                 boost::fusion::for_each(_visualizations, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
