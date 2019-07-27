@@ -29,11 +29,13 @@ int main(int argc, char** argv)
     auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[3], "Rhex", false, brk);
 
     // sets the control vector up, some examples:
-    // ./waf && ./build/test 0 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.25 0.25 0.25 0.25 0.25 0.25 0 0 0 0 0 0 0.5 0 0.5 0 0.5
-    // ./waf && ./build/test 0 1 raised.skel 0.3 0.6 0.1 0.9 0.1 0.3 0.25 0.25 0.25 0.25 0.25 0.25 0 0 0 0 0 0 0.5 0 0 0 0
-    // tripod: ./waf && ./build/test 0 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.25 0.25 0.25 0.25 0.25 0.25 0 0 0 0 0 0 0.25 0 0.25 0 0.25
-    // 0.725 0.925 0.975 0.125 0.9 0.875 0.275 0.775 0.95 0.55 0.075 0.15 0.475 0.3 0.975 0.525 0 0.425 0.175 0.9 0.875 0.1 0.3
-    // 0.775 1 1 0.925 0.975 0.975 0.025 0.175 0.7 0.15 0.875 0.125 0.125 1 0.5 0.25 0.825 0.325 0.3 0.6 1 0.05 0.725
+    //tripod
+    // ./waf && ./build/test 0 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0 0.5 0 0.5
+    // hill climb
+    // ./waf && ./build/test 1 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0 0 0.5 0.5 0.5
+    // stair climbing gait
+    // ./waf && ./build/test 2 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.33 0.66 0 0.33 0.66
+
     std::vector<double> ctrl = {atof(argv[4]), atof(argv[5]),
                                 atof(argv[6]), atof(argv[7]), atof(argv[8]),
                                 atof(argv[9]),atof(argv[10]),atof(argv[11]),

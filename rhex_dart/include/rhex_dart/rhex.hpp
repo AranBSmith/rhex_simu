@@ -27,10 +27,10 @@ namespace rhex_dart {
     public:
         Rhex() {}
 
-        Rhex(const std::string& model_file, const std::string& robot_name, const std::vector<std::pair<std::string, std::string>>& packages, bool is_urdf_string, std::vector<RhexDamage> damages) : _robot_name(robot_name), _skeleton(_load_model(model_file, packages, is_urdf_string))
+        Rhex(const std::string& model_file, const std::string& robot_name, const std::vector<std::pair<std::string, std::string>>& packages, bool is_urdf_string, std::vector<RhexDamage> damages) : _robot_name(robot_name), _skeleton(_load_model(robot_name, model_file, packages, is_urdf_string))
         {
             assert(_skeleton != nullptr);
-            //std::cout <<"cons 1" <<std::endl;
+
             // lock_hip_joints();
             _set_damages(damages);
 
@@ -42,15 +42,10 @@ namespace rhex_dart {
             // jnt->getForceUpperLimits();
         }
 
-        Rhex(const std::string& model_file, const std::string& robot_name, bool is_urdf_string, std::vector<RhexDamage> damages) : Rhex(model_file, robot_name, std::vector<std::pair<std::string, std::string>>(), is_urdf_string, damages) {
-            //std::cout <<"cons 3" <<std::endl;
-
-        }
+        Rhex(const std::string& model_file, const std::string& robot_name, bool is_urdf_string, std::vector<RhexDamage> damages) : Rhex(model_file, robot_name, std::vector<std::pair<std::string, std::string>>(), is_urdf_string, damages) {}
 
         Rhex(dart::dynamics::SkeletonPtr skeleton, std::vector<RhexDamage> damages) : _skeleton(skeleton)
         {
-            //std::cout <<"cons 2" <<std::endl;
-
             assert(_skeleton != nullptr);
             _set_damages(damages);
 
@@ -58,7 +53,6 @@ namespace rhex_dart {
 
         std::shared_ptr<Rhex> clone() const
         {
-            //std::cout << "in clone" << std::endl;
             // safely clone the skeleton
             _skeleton->getMutex().lock();
             auto tmp_skel = _skeleton->clone();
@@ -167,20 +161,17 @@ namespace rhex_dart {
         }
 
     protected:
-        dart::dynamics::SkeletonPtr _load_model(const std::string& filename, const std::vector<std::pair<std::string, std::string>>& packages, bool is_urdf_string)
+        dart::dynamics::SkeletonPtr _load_model(const std::string& robot_name, const std::string& filename, const std::vector<std::pair<std::string, std::string>>& packages, bool is_urdf_string)
         {
             // useful for knowing if you are running the latest version
             std::cout << "Version: 2307.1" << std::endl;
-            //std::cout << "2" << std::endl;
 
             // Remove spaces from beginning of the filename/path
             std::string model_file = filename;
-            std::cout << "2" << std::endl;
 
             model_file.erase(model_file.begin(), std::find_if(model_file.begin(), model_file.end(), [](int ch) {
                     return !std::isspace(ch);
             }));
-           // std::cout << "2" << std::endl;
 
             if (model_file[0] != '/') {
                 constexpr size_t max_size = 512;
@@ -189,7 +180,6 @@ namespace rhex_dart {
                // ROBOT_DART_ASSERT(val, "Something bad happenned when trying to read current path", nullptr);
                 model_file = std::string(buff) + "/" + model_file;
             }
-            //std::cout << "2" << std::endl;
 
             dart::dynamics::SkeletonPtr tmp_skel;
             if (!is_urdf_string) {
@@ -209,17 +199,15 @@ namespace rhex_dart {
                     // try to read the skeleton with name 'robot_name'
                     if (!tmp_skel) {
                         dart::simulation::WorldPtr world = dart::utils::SkelParser::readWorld(model_file);
-                        tmp_skel = world->getSkeleton(_robot_name);
+                        tmp_skel = world->getSkeleton(robot_name);
                     }
 
                     for (size_t i = 0; i < tmp_skel->getNumJoints(); ++i) {
                         tmp_skel->getJoint(i)->setPositionLimitEnforced(true);
-                        //std::cout << "2.1" << std::endl;
-
                     }
-                   // std::cout << "2" << std::endl;
 
                 }
+
                 else
                     return nullptr;
             }
@@ -232,16 +220,17 @@ namespace rhex_dart {
                 tmp_skel = loader.parseSkeletonString(filename, "");
             }
 
-            if (tmp_skel == nullptr)
+            if (tmp_skel == nullptr){
+                std::cout << "returning null pointer" << std::endl;
                 return nullptr;
+            }
 
-            tmp_skel->setName(_robot_name);
+            tmp_skel->setName(robot_name);
+
             // Set joint limits
             for (size_t i = 0; i < tmp_skel->getNumJoints(); ++i) {
-               // std::cout << "2.2" << std::endl;
                 tmp_skel->getJoint(i)->setPositionLimitEnforced(true);
             }
-           // std::cout << "2" << std::endl;
 
 
             // Fix for mesh materials
@@ -256,13 +245,11 @@ namespace rhex_dart {
                     }
                 }
             }
-            //std::cout << "At the end of load model" << std::endl;
             return tmp_skel;
         }
 
         void _set_damages(const std::vector<RhexDamage>& damages)
         {
-            //std::cout << "entering set damages" <<std::endl;
             _broken_legs.clear();
             _damages = damages;
             for (auto dmg : _damages) {
@@ -310,12 +297,6 @@ namespace rhex_dart {
             }
 
             std::sort(_broken_legs.begin(), _broken_legs.end());
-
-//            std::cout << "Broken legs: " ;
-//            for (size_t i = 0; i < _broken_legs.size(); i++)
-//                std::cout << _broken_legs.at(i) + ' ';
-//            std::cout << std::endl;
-            std::cout << "at the end of set damages" << std::endl;
         }
 
         dart::dynamics::SkeletonPtr _skeleton;
