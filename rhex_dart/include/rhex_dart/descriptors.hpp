@@ -144,6 +144,29 @@ namespace rhex_dart {
             std::vector<double> _vel_x, _vel_y, _vel_z;
         };
 
+        // intended leg phases
+        struct ControlPhase : public DescriptorBase {
+        public:
+            ControlPhase(){}
+
+            template <typename Simu, typename robot>
+            void operator()(Simu& simu, std::shared_ptr<robot> rob, const Eigen::Vector6d& init_trans)
+            {
+                // Eigen::Vector3d velocity = rob->skeleton()->getCOMLinearVelocity();
+                std::vector<double> param = simu.controller().parameters();
+                _phases = std::vector<double> (param.begin() + 18, param.end());
+            }
+
+            void get(std::vector<double>& results)
+            {
+                results = _phases;
+            }
+
+        protected:
+            std::vector<double> _phases;
+        };
+
+
         struct PositionTraj : public DescriptorBase {
         public:
             PositionTraj() {}

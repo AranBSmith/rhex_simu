@@ -54,7 +54,7 @@ namespace rhex_dart {
             using rhex_control_t = RhexControlBuehler;
             // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
             using safety_measures_t = boost::fusion::vector<safety_measures::TurnOver>;
-            using descriptors_t = boost::fusion::vector<descriptors::DutyCycle, descriptors::SpecificResistance, descriptors::AvgCOMVelocities>;
+            using descriptors_t = boost::fusion::vector<descriptors::DutyCycle, descriptors::SpecificResistance, descriptors::AvgCOMVelocities, descriptors::ControlPhase>;
             using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
         };
 
@@ -172,11 +172,13 @@ namespace rhex_dart {
                 if (!_fixed_camera) {
                     auto COM = rob->skeleton()->getCOM();
                     // set camera to follow rhex
-//                    _osg_viewer.getCameraManipulator()->setHomePosition(
-//                        osg::Vec3d(3, -3, 0.5), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
-
+                    if (_world_option > 0)
+                        _osg_viewer.getCameraManipulator()->setHomePosition(
+                            osg::Vec3d(-1, -3, 2), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
+                    else
                     _osg_viewer.getCameraManipulator()->setHomePosition(
-                        osg::Vec3d(-1, -3, 2), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
+                        osg::Vec3d(3, -3, 0.5), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
+
                     _osg_viewer.home();
                 }
                 // process next frame
