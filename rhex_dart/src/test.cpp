@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     // ./waf && ./build/test 1 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0 0 0.5 0.5 0.5
     // stair climbing gait
     // ./waf && ./build/test 2 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.33 0.66 0 0.33 0.66
-
+// 0.15 0.025 0.925 0.5 0.8 1 0 0.65 1 0.325 0.05 0 0.925 0.95 0.95 0.5 0.475 0.15 1 0.625 0.65 0.125 0.35
     std::vector<double> ctrl = {atof(argv[4]), atof(argv[5]),
                                 atof(argv[6]), atof(argv[7]), atof(argv[8]),
                                 atof(argv[9]),atof(argv[10]),atof(argv[11]),
@@ -48,9 +48,10 @@ int main(int argc, char** argv)
     using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle,
                     rhex_dart::descriptors::BodyOrientation,
                     rhex_dart::descriptors::SpecificResistance,
-                    rhex_dart::descriptors::AvgCOMVelocities>;
+                    rhex_dart::descriptors::AvgCOMVelocities,
+                    rhex_dart::descriptors::TruePhase>;
 
-    using viz_t = boost::fusion::vector<rhex_dart::visualizations::HeadingArrow, rhex_dart::visualizations::PointingArrow<Params>>;
+    using viz_t = boost::fusion::vector<rhex_dart::visualizations::HeadingArrow, rhex_dart::visualizations::RobotTrajectory>;
     rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot, atof(argv[1]), atof(argv[2]));
 
 #ifdef GRAPHIC

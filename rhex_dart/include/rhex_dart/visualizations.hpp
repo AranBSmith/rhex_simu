@@ -41,6 +41,54 @@ namespace rhex_dart {
             bool init;
         };
 
+        struct RobotTrajectory {
+        public:
+            RobotTrajectory() {
+                old_pos << 0, 0, 0;
+                count = 0;
+                offset << 0, 0, 0.1;
+
+            }
+
+            template <typename Simu, typename robot>
+            void operator()(Simu& simu, std::shared_ptr<robot> rob, const Eigen::Vector6d& init_trans)
+            {
+
+                if(count%100 == 0)
+                {
+                    Eigen::Vector3d current_pos = rob->pos();
+
+                    std::cout << "Current pos: " << current_pos;
+
+                    std::cout << "old pos: " << old_pos;
+
+                    dart::dynamics::SimpleFramePtr lineFrame
+                            = std::make_shared<dart::dynamics::SimpleFrame>(
+                            dart::dynamics::Frame::World());
+
+                    dart::dynamics::LineSegmentShapePtr mForceLine
+                            = std::make_shared<dart::dynamics::LineSegmentShape>(old_pos + offset, (current_pos + offset), 3.0);
+
+                    mForceLine->addDataVariance(dart::dynamics::Shape::DYNAMIC_VERTICES);
+
+                    lineFrame->setShape(mForceLine);
+                    lineFrame->createVisualAspect();
+                    lineFrame->getVisualAspect()->setColor(Eigen::Vector4d(1.0, 0.63, 0.0, 1.0));
+
+                    simu.world()->addSimpleFrame(lineFrame);
+
+                    old_pos = current_pos;
+                }
+                count++;
+            }
+
+        protected:
+            Eigen::Vector3d old_pos;
+            Eigen::Vector3d offset;
+
+            int count;
+        };
+
         template <typename Params>
         struct PointingArrow {
         public:

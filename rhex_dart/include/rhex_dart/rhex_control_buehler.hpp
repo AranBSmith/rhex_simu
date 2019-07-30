@@ -32,8 +32,6 @@ namespace rhex_dart {
             // need to know which, and the no. of legs removed.
             int leg = 0;
             for (auto dmg : _damages) {
-                std::cout << "here" << std::endl;
-                std::cout << _damages.size() << std::endl;
                 if (dmg.type == "leg_removal") {
                     _leg_count -= 1;
                     _removed_legs.push_back(stoi(dmg.data));
@@ -74,7 +72,6 @@ namespace rhex_dart {
 
         void update(double t)
         {
-            //std::cout<<"============="<<std::endl;
             if (_robot == nullptr)
                 return;
 
@@ -142,7 +139,7 @@ namespace rhex_dart {
 
                 // TODO: reasoning
                 if (diff > (3 * PI) / 2){
-                   // std::cout << "hit condition for: " << i << std::endl;
+                   std::cout << "hit condition for: " << i << std::endl;
                     _target_positions[i] +=  2 * PI;
                 }
             }

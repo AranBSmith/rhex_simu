@@ -16,6 +16,8 @@
 #include <rhex_dart/descriptors.hpp>
 #include <rhex_dart/visualizations.hpp>
 #include <cmath>
+#include <cstdlib>
+
 #ifdef GRAPHIC
 #include <dart/gui/osg/osg.hpp>
 #endif
@@ -55,7 +57,7 @@ namespace rhex_dart {
             // using safety_measures_t = boost::fusion::vector<safety_measures::MaxHeight, safety_measures::BodyColliding, safety_measures::TurnOver>;
             using safety_measures_t = boost::fusion::vector<safety_measures::TurnOver>;
             using descriptors_t = boost::fusion::vector<descriptors::DutyCycle, descriptors::SpecificResistance, descriptors::AvgCOMVelocities>;
-            using viz_t = boost::fusion::vector<visualizations::HeadingArrow>;
+            using viz_t = boost::fusion::vector<visualizations::HeadingArrow, visualizations::RobotTrajectory>;
         };
 
         // extract the types
@@ -96,6 +98,9 @@ namespace rhex_dart {
                     break;
                 case 3:
                     _add_slope();
+                    break;
+                case 4:
+                    _add_rugged();
                     break;
             }
 
@@ -479,10 +484,10 @@ namespace rhex_dart {
             sbody->setFrictionCoeff(friction);
 
             // Give the body a shape
-            double slope_width = 50.0;
+            double slope_width = 5.0;
             double slope_height = 0.1;
 
-            auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(slope_width, slope_width, slope_height));
+            auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(slope_width*5, slope_width, slope_height));
 
             auto box_node = sbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
 
@@ -490,13 +495,46 @@ namespace rhex_dart {
 
             // Put the body into position
             Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
-            tf.translation() = Eigen::Vector3d(0.0, 0.0, -slope_height / 2.0);
-            tf.linear() = Eigen::Quaterniond(45.0, 1.0, 0.0, 0.0).toRotationMatrix();
+            tf.translation() = Eigen::Vector3d(1.0, 0.0, 0);
+
+            tf.linear() = (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) *
+                       Eigen::AngleAxisd(-0.523599,  Eigen::Vector3d::UnitY()) *
+                       Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())).toRotationMatrix();
 
             sbody->getParentJoint()->setTransformFromParentBodyNode(tf);
 
             _world->addSkeleton(slope);
 
+        }
+
+        void _add_rugged()
+        {
+
+            srand(5);
+
+            for (size_t i = 0; i < 275; ++i){
+                double x = ((double) rand() / RAND_MAX); // 0 - 1 for x pos
+                double y = ((double) rand() / RAND_MAX) * 2 - 1; // -1 - 1 for y pos
+
+                double a = ((double) rand() / RAND_MAX); // 0 - 1 for dimensions
+                double b = ((double) rand() / RAND_MAX); // 0 - 1 for dimensions
+                double c = ((double) rand() / RAND_MAX); // 0 - 1 for dimensions
+
+                Eigen::Vector6d pose;
+                pose << 0, 0, 0, 3 * x, 1 * y, 0;
+                std::cout << "pose: " << pose << std::endl;
+                Eigen::Vector3d dims;
+                dims << 0.25 * a, 0.25 * a, 0.25 * c;
+
+                std::string type = "";
+
+                add_ellipsoid(pose, dims, type);
+            }
+
+//            add_ellipsoid(const Eigen::Vector6d& pose, const Eigen::Vector3d& dims,
+//                          std::string type = "free", double mass = 1.0,
+//                          const Eigen::Vector4d& color = dart::Color::Red(1.0),
+//                          const std::string& ellipsoid_name = "sphere")
         }
 
         void _add_hill(double friction = 1.0)
@@ -551,7 +589,7 @@ namespace rhex_dart {
 
                 // Put the body into position
                 Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
-                tf.translation() = Eigen::Vector3d(0.4 + (i*step_x_width), 0.0, i * (step_height));
+                tf.translation() = Eigen::Vector3d(0.4 + (i*step_x_width), 0.0, i * (step_height) - step_height/2);
                 sbody->getParentJoint()->setTransformFromParentBodyNode(tf);
 
                 _world->addSkeleton(step);
@@ -575,6 +613,7 @@ namespace rhex_dart {
         descriptors_t _descriptors;
         viz_t _visualizations;
         std::vector<dart::dynamics::SkeletonPtr> _objects;
+
 #ifdef GRAPHIC
         bool _fixed_camera;
         Eigen::Vector3d _look_at;
