@@ -48,8 +48,7 @@ int main(int argc, char** argv)
     using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle,
                     rhex_dart::descriptors::BodyOrientation,
                     rhex_dart::descriptors::SpecificResistance,
-                    rhex_dart::descriptors::AvgCOMVelocities,
-                    rhex_dart::descriptors::TruePhase>;
+                    rhex_dart::descriptors::AvgCOMVelocities>;
 
     using viz_t = boost::fusion::vector<rhex_dart::visualizations::HeadingArrow, rhex_dart::visualizations::RobotTrajectory>;
     rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot, atof(argv[1]), atof(argv[2]));

@@ -453,8 +453,8 @@ namespace rhex_dart {
             fbody->setFrictionCoeff(friction);
 
             // Give the body a shape
-            double floor_width = 50.0;
-            double floor_height = 0.1;
+            double floor_width = 20.0;
+            double floor_height = 0.2;
 
             auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(floor_width, floor_width, floor_height));
 

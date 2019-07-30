@@ -58,10 +58,6 @@ namespace rhex_dart {
                 {
                     Eigen::Vector3d current_pos = rob->pos();
 
-                    std::cout << "Current pos: " << current_pos;
-
-                    std::cout << "old pos: " << old_pos;
-
                     dart::dynamics::SimpleFramePtr lineFrame
                             = std::make_shared<dart::dynamics::SimpleFrame>(
                             dart::dynamics::Frame::World());
