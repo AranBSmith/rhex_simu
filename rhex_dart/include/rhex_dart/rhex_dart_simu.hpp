@@ -68,7 +68,7 @@ namespace rhex_dart {
         using descriptors_t = typename boost::mpl::if_<boost::fusion::traits::is_sequence<Descriptors>, Descriptors, boost::fusion::vector<Descriptors>>::type;
         using viz_t = typename boost::mpl::if_<boost::fusion::traits::is_sequence<Visualizations>, Visualizations, boost::fusion::vector<Visualizations>>::type;
 
-        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot, int world_option = 1, double friction = 1.0, std::vector<rhex_dart::RhexDamage> damages = {}) : _covered_distance(0.0),
+        RhexDARTSimu(const std::vector<double>& ctrl, robot_t robot, int world_option = 0, double friction = 1.0, std::vector<rhex_dart::RhexDamage> damages = {}) : _covered_distance(0.0),
                                                                           _energy(0.0),
                                                                           _world(std::make_shared<dart::simulation::World>()),
                                                                           _controller(ctrl, robot, damages),
