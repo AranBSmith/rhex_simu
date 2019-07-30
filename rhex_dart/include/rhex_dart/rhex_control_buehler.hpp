@@ -139,7 +139,7 @@ namespace rhex_dart {
 
                 // TODO: reasoning
                 if (diff > (3 * PI) / 2){
-                   std::cout << "hit condition for: " << i << std::endl;
+                   // std::cout << "hit condition for: " << i << std::endl;
                     _target_positions[i] +=  2 * PI;
                 }
             }
