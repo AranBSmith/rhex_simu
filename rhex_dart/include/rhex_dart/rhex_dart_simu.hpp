@@ -85,27 +85,25 @@ namespace rhex_dart {
             // set position of rhex
             _robot->skeleton()->setPosition(6, 0.1);
 
-            _add_floor(friction);
+            std::cout << "Received world option: " << _world_option << std::endl;
 
             switch(_world_option) {
                 case 0: // just a flat world
+                    _add_floor(friction);
                     break;
                 case 1: // flat world with a round hill, make sure to turn off height safety measure!
-                    _add_hill();
+                    _add_hill(friction);
                     break;
                 case 2:
                     _add_stairs();
                     break;
                 case 3:
-                    _add_slope();
+                    _add_slope(friction);
                     break;
                 case 4:
                     _add_rugged();
                     break;
             }
-
-            if(_world_option == 1)
-                _add_hill(friction);
 
             _world->addSkeleton(_robot->skeleton());
             _world->setTimeStep(0.005);
@@ -122,15 +120,8 @@ namespace rhex_dart {
             _osg_viewer.addWorldNode(_osg_world_node);
             _osg_viewer.setUpViewInWindow(0, 0, 640, 480);
 
-//            std::make_shared<dart::gui::osg::GridVisual> grid = new dart::gui::osg::GridVisual();
-
-//            _osg_viewer.getImGuiHandler().addWidget(
-//              std::make_shared<dart::gui::osg::ImGuiWidget>(_osg_viewer, _osg_world_node, grid));
-
-//            _osg_viewer.addAttachment(grid);
-
-// full-screen
-// _osg_viewer.setUpViewOnSingleScreen();
+            // full-screen
+            // _osg_viewer.setUpViewOnSingleScreen();
 #endif
         }
         
@@ -440,7 +431,7 @@ namespace rhex_dart {
             return stabilized;
         }
 
-        void _add_floor(double friction = 1.0)
+        void _add_floor(double friction = 1.0, double width = 20.0, double length = 20.0)
         {
             // We do not want 2 floors!
             if (_world->getSkeleton("floor") != nullptr)
@@ -453,10 +444,9 @@ namespace rhex_dart {
             fbody->setFrictionCoeff(friction);
 
             // Give the body a shape
-            double floor_width = 20.0;
             double floor_height = 0.2;
 
-            auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(floor_width, floor_width, floor_height));
+            auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(width, length, floor_height));
 
             auto box_node = fbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
 
@@ -476,7 +466,7 @@ namespace rhex_dart {
             // We do not want 2 floors!
             if (_world->getSkeleton("slope") != nullptr)
                 return;
-
+            _add_floor(1, 1, 1);
             dart::dynamics::SkeletonPtr slope = dart::dynamics::Skeleton::create("slope");
 
             // Give the slope a body
@@ -495,7 +485,7 @@ namespace rhex_dart {
 
             // Put the body into position
             Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
-            tf.translation() = Eigen::Vector3d(1.0, 0.0, 0);
+            tf.translation() = Eigen::Vector3d(0.3, 0.0, 0);
 
             tf.linear() = (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) *
                        Eigen::AngleAxisd(-0.523599,  Eigen::Vector3d::UnitY()) *
@@ -509,6 +499,7 @@ namespace rhex_dart {
 
         void _add_rugged()
         {
+            _add_floor(1, 20, 2);
 
             srand(5);
 
@@ -522,26 +513,19 @@ namespace rhex_dart {
 
                 Eigen::Vector6d pose;
                 pose << 0, 0, 0, 3 * x, 1 * y, 0;
-                std::cout << "pose: " << pose << std::endl;
                 Eigen::Vector3d dims;
-                dims << 0.25 * a, 0.25 * a, 0.25 * c;
-
+                dims << 0.2 * a + 0.05, 0.2 * a + 0.05, 0.2 * c + 0.05;
                 std::string type = "";
 
                 add_ellipsoid(pose, dims, type);
             }
-
-//            add_ellipsoid(const Eigen::Vector6d& pose, const Eigen::Vector3d& dims,
-//                          std::string type = "free", double mass = 1.0,
-//                          const Eigen::Vector4d& color = dart::Color::Red(1.0),
-//                          const std::string& ellipsoid_name = "sphere")
         }
 
         void _add_hill(double friction = 1.0)
         {
             if (_world->getSkeleton("hill") != nullptr)
                 return;
-
+            _add_floor(1, 20, 2);
             dart::dynamics::SkeletonPtr hill = dart::dynamics::Skeleton::create("hill");
 
             // give the hill a body
@@ -567,7 +551,7 @@ namespace rhex_dart {
         void _add_stairs(double friction = 1.0)
         {
             // TODO: protect from duplicate stairs
-
+            _add_floor(1, 20, 5);
             // Give the body a shape
             double step_x_width = 0.2;
             double step_y_width = 5;

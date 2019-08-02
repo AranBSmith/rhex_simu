@@ -48,7 +48,8 @@ int main(int argc, char** argv)
     using desc_t = boost::fusion::vector<rhex_dart::descriptors::DutyCycle,
                     rhex_dart::descriptors::BodyOrientation,
                     rhex_dart::descriptors::SpecificResistance,
-                    rhex_dart::descriptors::AvgCOMVelocities>;
+                    rhex_dart::descriptors::AvgCOMVelocities,
+                    rhex_dart::descriptors::PositionTraj>;
 
     using viz_t = boost::fusion::vector<rhex_dart::visualizations::HeadingArrow, rhex_dart::visualizations::RobotTrajectory>;
     rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot, atof(argv[1]), atof(argv[2]));
@@ -57,7 +58,7 @@ int main(int argc, char** argv)
     simu.fixed_camera(Eigen::Vector3d(3, 0, 0.5));
     simu.follow_rhex();
 #endif
-    simu.run(15);
+    simu.run(5);
 
     std::cout << "Covered distance | Arrival angle | Body avg height" << std::endl;
     std::cout << simu.covered_distance() << " " << simu.arrival_angle() << " " << simu.body_avg_height() << std::endl;
@@ -93,6 +94,15 @@ int main(int argc, char** argv)
         std::cout << vels[i] << " ";
     }
     std::cout << std::endl;
+
+    std::vector<Eigen::Vector3d> pos_traj;
+    simu.get_descriptor<rhex_dart::descriptors::PositionTraj>(pos_traj);
+
+//    std::cout << "Position Trajectories" << std::endl;
+//    for (size_t i = 0; i < pos_traj.size(); i++) {
+//        std::cout << pos_traj[i] << " ";
+//    }
+//    std::cout << std::endl;
 
     global_robot.reset();
     return 0;
