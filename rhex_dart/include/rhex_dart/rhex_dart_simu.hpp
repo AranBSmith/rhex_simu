@@ -84,9 +84,6 @@ namespace rhex_dart {
 
             // set position of rhex
             _robot->skeleton()->setPosition(6, 0.1);
-
-            std::cout << "Received world option: " << _world_option << std::endl;
-
             switch(_world_option) {
                 case 0: // just a flat world
                     _add_floor(friction);
