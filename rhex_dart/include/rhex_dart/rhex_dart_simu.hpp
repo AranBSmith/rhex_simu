@@ -9,6 +9,8 @@
 
 #include <dart/dart.hpp>
 #include <dart/collision/dart/DARTCollisionDetector.hpp>
+#include <dart/math/Constants.hpp>
+
 #include <Eigen/Core>
 #include <rhex_dart/rhex.hpp>
 #include <rhex_dart/rhex_control_buehler.hpp>
@@ -99,6 +101,12 @@ namespace rhex_dart {
                     break;
                 case 4:
                     _add_rugged();
+                    break;
+                case 5:
+                    _add_ditch();
+                    break;
+                case 6:
+                    _add_pipes();
                     break;
             }
 
@@ -348,19 +356,7 @@ namespace rhex_dart {
         // pose: Orientation-Position, dims: XYZ
         void add_ellipsoid(const Eigen::Vector6d& pose, const Eigen::Vector3d& dims, std::string type = "free", double mass = 1.0, const Eigen::Vector4d& color = dart::Color::Red(1.0), const std::string& ellipsoid_name = "sphere")
         {
-            std::string name = ellipsoid_name;
-            // We do not want ellipsoids with the same names!
-            while (_world->getSkeleton(name) != nullptr) {
-                if (name[name.size() - 2] == '_') {
-                    int i = name.back() - '0';
-                    i++;
-                    name.pop_back();
-                    name = name + std::to_string(i);
-                }
-                else {
-                    name = name + "_1";
-                }
-            }
+            std::string name = _get_unique(ellipsoid_name);
 
             dart::dynamics::SkeletonPtr ellipsoid_skel = dart::dynamics::Skeleton::create(name);
 
@@ -505,13 +501,13 @@ namespace rhex_dart {
                 double y = ((double) rand() / RAND_MAX) * 2 - 1; // -1 - 1 for y pos
 
                 double a = ((double) rand() / RAND_MAX); // 0 - 1 for dimensions
-                double b = ((double) rand() / RAND_MAX); // 0 - 1 for dimensions
-                double c = ((double) rand() / RAND_MAX); // 0 - 1 for dimensions
+                // double b = ((double) rand() / RAND_MAX); // 0 - 1 for dimensions
+                // double c = ((double) rand() / RAND_MAX); // 0 - 1 for dimensions
 
                 Eigen::Vector6d pose;
                 pose << 0, 0, 0, 3 * x, 1 * y, 0;
                 Eigen::Vector3d dims;
-                dims << 0.2 * a + 0.05, 0.2 * a + 0.05, 0.2 * c + 0.05;
+                dims << 0.2 * a + 0.05, 0.2 * a + 0.05, 0.2 * a + 0.05;
                 std::string type = "";
 
                 add_ellipsoid(pose, dims, type);
@@ -547,20 +543,22 @@ namespace rhex_dart {
 
         void _add_stairs(double friction = 1.0)
         {
-            // TODO: protect from duplicate stairs
             _add_floor(1, 20, 5);
+
             // Give the body a shape
             double step_x_width = 0.2;
             double step_y_width = 5;
-            double step_height = 0.2;
+            double step_height = 0.18;
 
             for (size_t i = 0; i < 100; ++i)
             {
-                dart::dynamics::SkeletonPtr step = dart::dynamics::Skeleton::create("step");
+                std::string name = _get_unique("step");
+                dart::dynamics::SkeletonPtr step = dart::dynamics::Skeleton::create(name);
 
                 // Give the floor a body
                 dart::dynamics::BodyNodePtr sbody = step->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
                 sbody->setFrictionCoeff(friction);
+                sbody->setName(name);
 
                 auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(step_x_width, step_y_width, step_height));
 
@@ -575,6 +573,129 @@ namespace rhex_dart {
 
                 _world->addSkeleton(step);
             }
+        }
+
+        void _add_ditch(double friction = 1.0)
+        {
+            _add_floor(1, 1, 5);
+
+            // much like _add_stairs, except consisting of a downwards set of steps and then an upward set of steps
+            double step_x_width = 0.2;
+            double step_y_width = 5;
+            double step_height = 0.18;
+            double step_count = 5;
+
+            // descending steps
+            for (size_t i = 0; i < step_count; ++i)
+            {
+                std::string name = _get_unique("step");
+                dart::dynamics::SkeletonPtr step = dart::dynamics::Skeleton::create(name);
+
+                // Give the floor a body
+                dart::dynamics::BodyNodePtr sbody = step->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+                sbody->setFrictionCoeff(friction);
+                sbody->setName(name);
+
+                auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(step_x_width, step_y_width, step_height));
+
+                auto box_node = sbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+                box_node->getVisualAspect()->setColor(dart::Color::Green());
+
+                // Put the body into position
+                Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+                tf.translation() = Eigen::Vector3d(0.4 + (i*step_x_width), 0.0, - step_height/2 + -1 * (i * step_height));
+                sbody->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+                _world->addSkeleton(step);
+            }
+
+            // ascending steps
+            for (size_t i = step_count; i < step_count * 2; ++i)
+            {
+                std::string name = _get_unique("step");
+                dart::dynamics::SkeletonPtr step = dart::dynamics::Skeleton::create(name);
+
+                // Give the floor a body
+                dart::dynamics::BodyNodePtr sbody = step->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+                sbody->setFrictionCoeff(friction);
+                sbody->setName(name);
+
+                auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(step_x_width, step_y_width, step_height));
+
+                auto box_node = sbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+                box_node->getVisualAspect()->setColor(dart::Color::Green());
+
+                // Put the body into position
+                Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+                tf.translation() = Eigen::Vector3d(0.4 + (i * step_x_width), 0.0, i * (step_height) - step_height/2 + -2 * (step_count * step_height));
+                sbody->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+                _world->addSkeleton(step);
+            }
+        }
+
+        // dart collisions dont support box - cylinder collisions, I use the next closest shape, long thin boxes
+        // to mimic pipes/sticks
+        void _add_pipes(double friction = 1.0)
+        {
+            // create cylinders without the same name
+            double pipe_x_width = 0.05;
+            double pipe_y_width = 10;
+            double pipe_z_width = 0.05;
+            int num_pipes = 10;
+            double pipe_y_rotation = 1.57079632679 / 2; // 45 degrees rototation
+            double pipe_x_spacing = 1;
+
+            _add_floor(1, 20, 10);
+
+            for (size_t i = 0; i < num_pipes; ++i)
+            {
+                std::string name = _get_unique("pipe");
+                dart::dynamics::SkeletonPtr pipe = dart::dynamics::Skeleton::create(name);
+
+                // Give the pipe a body
+                dart::dynamics::BodyNodePtr body = pipe->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+                body->setFrictionCoeff(friction);
+                body->setName(name);
+
+                auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(pipe_x_width, pipe_y_width, pipe_z_width));
+
+                auto box_node = body->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+                box_node->getVisualAspect()->setColor(dart::Color::Green());
+
+                // Put the body into position
+                Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+                tf.translation() = Eigen::Vector3d(0.4 + (i*pipe_x_spacing), 0.0, 0.15);
+
+                tf.linear() = (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) *
+                           Eigen::AngleAxisd(pipe_y_rotation,  Eigen::Vector3d::UnitY()) *
+                           Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())).toRotationMatrix();
+
+                body->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+                _world->addSkeleton(pipe);
+            }
+
+        }
+
+        // Helper function to squash dart warnings from console output
+        std::string _get_unique(std::string name) {
+            while (_world->getSkeleton(name) != nullptr) {
+                if (name[name.size() - 2] == '_') {
+                    int i = name.back() - '0';
+                    i++;
+                    name.pop_back();
+                    name = name + std::to_string(i);
+                }
+                else {
+                    name = name + "_1";
+                }
+            }
+
+            return name;
         }
 
         int _world_option;
