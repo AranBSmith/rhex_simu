@@ -103,10 +103,19 @@ namespace rhex_dart {
                     _add_rugged();
                     break;
                 case 5:
-                    _add_ditch();
+                    _add_rugged_ditch();
                     break;
                 case 6:
                     _add_pipes();
+                    break;
+                case 7:
+                    _add_ditch();
+                    break;
+                case 8:
+                    _add_thick_pipe();
+                    break;
+                case 9:
+                    _add_thin_pipe();
                     break;
             }
 
@@ -191,7 +200,6 @@ namespace rhex_dart {
 
                 ++index;
                 _body_avg_height += rob->pos()[2];
-
             }
             _old_index = index;
 
@@ -255,7 +263,7 @@ namespace rhex_dart {
 
         double body_avg_height() const
         {
-            return _covered_distance;
+            return _body_avg_height;
         }
 
         double energy() const
@@ -575,7 +583,7 @@ namespace rhex_dart {
             }
         }
 
-        void _add_ditch(double friction = 1.0)
+        void _add_rugged_ditch(double friction = 1.0)
         {
             _add_floor(1, 1, 5);
 
@@ -634,6 +642,131 @@ namespace rhex_dart {
 
                 _world->addSkeleton(step);
             }
+
+            // straight platform for the end
+            dart::dynamics::SkeletonPtr floor = dart::dynamics::Skeleton::create("floor1");
+
+            // Give the floor a body
+            dart::dynamics::BodyNodePtr fbody = floor->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+            fbody->setFrictionCoeff(friction);
+
+            // Give the body a shape
+            double floor_height = 0.2;
+            double width = 20.0;
+            double length = 20.0;
+
+            auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(width, length, floor_height));
+
+            auto box_node = fbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+            box_node->getVisualAspect()->setColor(dart::Color::Gray());
+
+            // Put the body into position
+            Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+            tf.translation() = Eigen::Vector3d(12.3, 0.0, -floor_height / 2.0);
+            fbody->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+            _world->addSkeleton(floor);
+
+        }
+
+        void _add_ditch(double friction = 1.0)
+        {
+            _add_floor(1, 0.6, 5);
+
+            dart::dynamics::SkeletonPtr slope = dart::dynamics::Skeleton::create("slope");
+
+            // Give the slope a body
+            dart::dynamics::BodyNodePtr sbody = slope->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+            sbody->setFrictionCoeff(friction);
+
+            // Give the body a shape
+            double slope_width = 5.0;
+            double slope_height = 0.1;
+
+            auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(slope_width/2, slope_width - 0.1, slope_height));
+
+            auto box_node = sbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+            box_node->getVisualAspect()->setColor(dart::Color::Blue());
+
+            // Put the body into position
+            Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+            tf.translation() = Eigen::Vector3d(1.4, 0, -0.33);
+
+            tf.linear() = (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) *
+                       Eigen::AngleAxisd(0.261799,  Eigen::Vector3d::UnitY()) *
+                       Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())).toRotationMatrix();
+
+            sbody->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+            _world->addSkeleton(slope);
+
+            //floor
+            dart::dynamics::SkeletonPtr floor = dart::dynamics::Skeleton::create("floor");
+
+            // Give the floor a body
+            dart::dynamics::BodyNodePtr fbody = floor->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+            fbody->setFrictionCoeff(friction);
+
+            // Give the body a shape
+            double floor_height = 0.2;
+
+            box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(5, 5, floor_height));
+
+            box_node = fbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+            box_node->getVisualAspect()->setColor(dart::Color::Gray());
+
+            // Put the body into position
+            Eigen::Isometry3d tf_floor(Eigen::Isometry3d::Identity());
+            tf_floor.translation() = Eigen::Vector3d(5, 0.0, -0.647);
+            fbody->getParentJoint()->setTransformFromParentBodyNode(tf_floor);
+
+            _world->addSkeleton(floor);
+
+            // incline
+            slope = dart::dynamics::Skeleton::create("slope1");
+            sbody = slope->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+            sbody->setFrictionCoeff(friction);
+
+            box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(slope_width, slope_width, slope_height));
+
+            box_node = sbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+            box_node->getVisualAspect()->setColor(dart::Color::Blue());
+
+            // Put the body into position
+            Eigen::Isometry3d tf_incline(Eigen::Isometry3d::Identity());
+            tf_incline.translation() = Eigen::Vector3d(1.41 + 2.5, 0, -0.647);
+
+            tf_incline.linear() = (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) *
+                       Eigen::AngleAxisd(-0.261799,  Eigen::Vector3d::UnitY()) *
+                       Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())).toRotationMatrix();
+
+            sbody->getParentJoint()->setTransformFromParentBodyNode(tf_incline);
+
+            _world->addSkeleton(slope);
+
+            floor = dart::dynamics::Skeleton::create("floor1");
+
+            // Give the floor a body
+            fbody = floor->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+            fbody->setFrictionCoeff(friction);
+
+            box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(5, 5, floor_height));
+
+            box_node = fbody->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+            box_node->getVisualAspect()->setColor(dart::Color::Gray());
+
+            // Put the body into position
+            Eigen::Isometry3d tf_floor_end(Eigen::Isometry3d::Identity());
+            tf_floor_end.translation() = Eigen::Vector3d(8.8, 0.0, -0.1);
+            fbody->getParentJoint()->setTransformFromParentBodyNode(tf_floor_end);
+
+            _world->addSkeleton(floor);
+
         }
 
         // dart collisions dont support box - cylinder collisions, I use the next closest shape, long thin boxes
@@ -673,6 +806,91 @@ namespace rhex_dart {
                 tf.linear() = (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) *
                            Eigen::AngleAxisd(pipe_y_rotation,  Eigen::Vector3d::UnitY()) *
                            Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())).toRotationMatrix();
+
+                body->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+                _world->addSkeleton(pipe);
+            }
+
+        }
+
+        // approximate a pipe shape for larger radius
+        void _add_thick_pipe(double friction = 1.0)
+        {
+            // create cylinders without the same name
+            double pipe_x_width = 0.15;
+            double pipe_y_width = 10;
+            double pipe_z_width = 0.15;
+            double pipe_y_rotation = 1.57079632679 / 2; // 45 degrees rototation
+
+            _add_floor(1, 20, 10);
+
+            for (size_t i = 0; i < 2; ++i)
+            {
+                std::string name = _get_unique("pipe");
+                dart::dynamics::SkeletonPtr pipe = dart::dynamics::Skeleton::create(name);
+
+                // Give the pipe a body
+                dart::dynamics::BodyNodePtr body = pipe->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+                body->setFrictionCoeff(friction);
+                body->setName(name);
+
+                auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(pipe_x_width, pipe_y_width, pipe_z_width));
+
+                auto box_node = body->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+                box_node->getVisualAspect()->setColor(dart::Color::Green());
+
+                // Put the body into position
+                Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+                tf.translation() = Eigen::Vector3d(0.6, 0.0, 0.15);
+
+                if (i == 1)
+                    tf.linear() = (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) *
+                               Eigen::AngleAxisd(pipe_y_rotation,  Eigen::Vector3d::UnitY()) *
+                               Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())).toRotationMatrix();
+
+                body->getParentJoint()->setTransformFromParentBodyNode(tf);
+
+                _world->addSkeleton(pipe);
+            }
+
+        }
+
+        void _add_thin_pipe(double friction = 1.0)
+        {
+            // create cylinders without the same name
+            double pipe_x_width = 0.10;
+            double pipe_y_width = 10;
+            double pipe_z_width = 0.10;
+            double pipe_y_rotation = 1.57079632679 / 2; // 45 degrees rototation
+
+            _add_floor(1, 20, 10);
+
+            for (size_t i = 0; i < 2; ++i)
+            {
+                std::string name = _get_unique("pipe");
+                dart::dynamics::SkeletonPtr pipe = dart::dynamics::Skeleton::create(name);
+
+                // Give the pipe a body
+                dart::dynamics::BodyNodePtr body = pipe->createJointAndBodyNodePair<dart::dynamics::WeldJoint>(nullptr).second;
+                body->setFrictionCoeff(friction);
+                body->setName(name);
+
+                auto box = std::make_shared<dart::dynamics::BoxShape>(Eigen::Vector3d(pipe_x_width, pipe_y_width, pipe_z_width));
+
+                auto box_node = body->createShapeNodeWith<dart::dynamics::VisualAspect, dart::dynamics::CollisionAspect, dart::dynamics::DynamicsAspect>(box);
+
+                box_node->getVisualAspect()->setColor(dart::Color::Green());
+
+                // Put the body into position
+                Eigen::Isometry3d tf(Eigen::Isometry3d::Identity());
+                tf.translation() = Eigen::Vector3d(0.4, 0.0, 0.15);
+
+                if (i == 1)
+                    tf.linear() = (Eigen::AngleAxisd(0, Eigen::Vector3d::UnitX()) *
+                               Eigen::AngleAxisd(pipe_y_rotation,  Eigen::Vector3d::UnitY()) *
+                               Eigen::AngleAxisd(0, Eigen::Vector3d::UnitZ())).toRotationMatrix();
 
                 body->getParentJoint()->setTransformFromParentBodyNode(tf);
 

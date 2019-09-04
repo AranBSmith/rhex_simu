@@ -21,21 +21,20 @@ struct Params {
 int main(int argc, char** argv)
 {
     // using the same model as the hexapod and so the robot has a damages parameter but is set to 0
-    std::vector<rhex_dart::RhexDamage> brk = {};
-
+    // std::vector<rhex_dart::RhexDamage> brk = {};
+    std::vector<rhex_dart::RhexDamage> brk = std::vector<rhex_dart::RhexDamage>();
     assert(argc == 28);
     // loads the robot with name Rhex tels it that it is not a URDF file and give it the blank damages
-    // raised.skel, skinny.skel, Rhex8.skel
+    // raised.skel, skinny.skel, Rhex8.skel, raised_loosehind.skel
     auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[3], "Rhex", false, brk);
 
     // sets the control vector up, some examples:
     //tripod
-    // ./waf && ./build/test 0 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0 0.5 0 0.5
+    // ./waf && ./build/test 0 1 raised.skel 1 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0 0.5 0 0.5
     // hill climb
-    // ./waf && ./build/test 1 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0 0 0.5 0.5 0.5
+    // ./waf && ./build/test 1 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0 0 0.5 0.5 0.5
     // stair climbing gait
-    // ./waf && ./build/test 2 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.33 0.66 0 0.33 0.66
-// 0.15 0.025 0.925 0.5 0.8 1 0 0.65 1 0.325 0.05 0 0.925 0.95 0.95 0.5 0.475 0.15 1 0.625 0.65 0.125 0.35
+    // ./waf && ./build/test 2 1 raised.skel 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.5 0.33 0.66 0 0.33 0.66
     std::vector<double> ctrl = {atof(argv[4]), atof(argv[5]),
                                 atof(argv[6]), atof(argv[7]), atof(argv[8]),
                                 atof(argv[9]),atof(argv[10]),atof(argv[11]),
@@ -51,8 +50,9 @@ int main(int argc, char** argv)
                     rhex_dart::descriptors::AvgCOMVelocities,
                     rhex_dart::descriptors::PositionTraj>;
 
-    using viz_t = boost::fusion::vector<rhex_dart::visualizations::HeadingArrow, rhex_dart::visualizations::RobotTrajectory>;
-    rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot, atof(argv[1]), atof(argv[2]));
+     // using safe_t = boost::fusion::vector<rhex_dart::safety_measures::BodyColliding, rhex_dart::safety_measures::MaxHeight, rhex_dart::safety_measures::TurnOver>;
+     using viz_t = boost::fusion::vector<rhex_dart::visualizations::HeadingArrow, rhex_dart::visualizations::RobotTrajectory>;
+     rhex_dart::RhexDARTSimu<rhex_dart::desc<desc_t>, rhex_dart::viz<viz_t>> simu(ctrl, global_robot, atof(argv[1]), atof(argv[2]));
 
 #ifdef GRAPHIC
     simu.fixed_camera(Eigen::Vector3d(3, 0, 0.5));
@@ -98,11 +98,11 @@ int main(int argc, char** argv)
     std::vector<Eigen::Vector3d> pos_traj;
     simu.get_descriptor<rhex_dart::descriptors::PositionTraj>(pos_traj);
 
-//    std::cout << "Position Trajectories" << std::endl;
-//    for (size_t i = 0; i < pos_traj.size(); i++) {
-//        std::cout << pos_traj[i] << " ";
-//    }
-//    std::cout << std::endl;
+    std::cout << "Position Trajectories" << std::endl;
+    for (size_t i = 0; i < pos_traj.size(); i++) {
+        std::cout << pos_traj[i] << " ";
+    }
+    std::cout << std::endl;
 
     global_robot.reset();
     return 0;
