@@ -2,7 +2,7 @@
 #include <cstdlib>
 #include <rhex_dart/rhex_dart_simu.hpp>
 
-#define CTRL_SIZE 31
+#define CTRL_SIZE 28
 
 struct Params {
     static constexpr double radius() { return 0.01; }
@@ -21,11 +21,11 @@ struct Params {
 int main(int argc, char** argv)
 {
     // using the same model as the hexapod and so the robot has a damages parameter but is set to 0
-    // std::vector<rhex_dart::RhexDamage> brk = {};
     std::vector<rhex_dart::RhexDamage> brk = std::vector<rhex_dart::RhexDamage>();
-    assert(argc == 28);
+    assert(argc == CTRL_SIZE);
+
     // loads the robot with name Rhex tels it that it is not a URDF file and give it the blank damages
-    // raised.skel, skinny.skel, Rhex8.skel, raised_loosehind.skel
+    // possible models: raised.skel, skinny.skel, Rhex8.skel, raised_loosehind.skel
     auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[3], "Rhex", false, brk);
 
     // sets the control vector up, some examples:
@@ -92,15 +92,6 @@ int main(int argc, char** argv)
     std::cout << "Avg COM Velocities" << std::endl;
     for (size_t i = 0; i < vels.size(); i++) {
         std::cout << vels[i] << " ";
-    }
-    std::cout << std::endl;
-
-    std::vector<Eigen::Vector3d> pos_traj;
-    simu.get_descriptor<rhex_dart::descriptors::PositionTraj>(pos_traj);
-
-    std::cout << "Position Trajectories" << std::endl;
-    for (size_t i = 0; i < pos_traj.size(); i++) {
-        std::cout << pos_traj[i] << " ";
     }
     std::cout << std::endl;
 
