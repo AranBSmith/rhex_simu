@@ -7,6 +7,8 @@
 #include <rhex_controller/rhex_controller_cpg.hpp>
 #define PI 3.14159265
 
+// this file is a work in progress
+
 namespace rhex_dart {
 
     class RhexControl {

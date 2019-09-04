@@ -49,7 +49,6 @@ namespace rhex_dart {
                 for (size_t i = 0; i < 6; ++i) {
                     if (rob->is_broken(i)) {
                         _contacts[i].push_back(0);
-                        // std::cout<<"pushing back 0" <<std::endl;
                     }
                     else {
                         for (size_t j = 1; j <= 8; ++j) {
@@ -79,40 +78,7 @@ namespace rhex_dart {
             std::map<size_t, std::vector<size_t>> _contacts;
         };
 
-//        struct TruePhase : public DescriptorBase {
-//        public:
-//            TruePhase()
-//            {
-//                for (size_t i = 0; i < 6; i++)
-//                    _phase_diffs[i] = std::vector<size_t>();
-//            }
-
-//            template <typename Simu, typename robot>
-//            void operator()(Simu& simu, std::shared_ptr<robot> rob, const Eigen::Vector6d& init_trans)
-//            {
-//                Eigen::VectorXd current_positions = rob->skeleton()->getPositions();
-
-//                // normalize
-//                std::cout << "Current positions: " << current_positions << std::endl;
-//                std::cout << "position 1: " << current_positions[i + 6] << std::endl;
-
-//                for (size_t i = 0; i < 6; ++i) {
-
-//                }
-//            }
-
-//            void get(std::vector<double>& results)
-//            {
-//                for (size_t i = 0; i < 6; i++) {
-//                    results.push_back(std::round(std::accumulate(_phase_diffs[i].begin(), _phase_diffs[i].end(), 0.0) / double(_phase_diffs[i].size()) * 100.0) / 100.0);
-//                }
-//            }
-
-//        protected:
-//            std::map<size_t, std::vector<size_t>> _phase_diffs;
-//        };
-
-        // intended leg phases
+        // intended leg phases, these are not observed behaviourally
         struct ControlPhase : public DescriptorBase {
         public:
             ControlPhase(){}
@@ -120,7 +86,6 @@ namespace rhex_dart {
             template <typename Simu, typename robot>
             void operator()(Simu& simu, std::shared_ptr<robot> rob, const Eigen::Vector6d& init_trans)
             {
-                // Eigen::Vector3d velocity = rob->skeleton()->getCOMLinearVelocity();
                 std::vector<double> param = simu.controller().parameters();
                 _phases = std::vector<double> (param.begin() + 18, param.end());
             }

@@ -74,7 +74,7 @@ namespace rhex_dart {
 
                 // Remember last error for next calculation
                 _last_error[i] = error[i];
-                // std::cout << Pterm) + " " + str(_Iterm) + " " + str(_Dterm) << std::endl;
+                // std::cout << str(_Pterm) + " " + str(_Iterm) + " " + str(_Dterm) << std::endl;
 
                 _output[i] = _Pterm[i] + (_Ki * _Iterm[i]) + (_Kd * _Dterm[i]);
 

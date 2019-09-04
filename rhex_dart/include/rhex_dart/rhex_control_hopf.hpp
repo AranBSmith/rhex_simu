@@ -14,6 +14,8 @@
 #define FORCE_LIMIT 3
 #define IGNORE 1000
 
+// this file is a work in progress
+
 namespace rhex_dart {
 
     class RhexControlHopf {

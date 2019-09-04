@@ -138,7 +138,7 @@ namespace rhex_dart {
             // _osg_viewer.setUpViewOnSingleScreen();
 #endif
         }
-        
+
         ~RhexDARTSimu() {}
 
         void run(double duration = 5.0, bool continuous = false, bool chain = false)
@@ -157,14 +157,14 @@ namespace rhex_dart {
             while ((_world->getTime() - old_t) < duration)
 #endif
             {
-                _controller.update(chain ? (_world->getTime() - old_t) : _world->getTime());            
+                _controller.update(chain ? (_world->getTime() - old_t) : _world->getTime());
 
-                _world->step(false); 
+                _world->step(false);
 
                 // integrate Torque (force) over time
                 Eigen::VectorXd state = rob->skeleton()->getForces().array().abs() * _world->getTimeStep();
                 _energy += state.sum();
-                
+
                 // update safety measures
                 if (_world->getTime() >= 2)
                     boost::fusion::for_each(_safety_measures, Refresh<RhexDARTSimu, Rhex>(*this, rob, init_trans));
@@ -181,10 +181,6 @@ namespace rhex_dart {
 #ifdef GRAPHIC
                 if (!_fixed_camera) {
                     auto COM = rob->skeleton()->getCOM();
-                    // set camera to follow rhex
-//                    _osg_viewer.getCameraManipulator()->setHomePosition(
-//                        osg::Vec3d(3, -3, 0.5), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
-
                     _osg_viewer.getCameraManipulator()->setHomePosition(
                         osg::Vec3d(-1, -3, 2), osg::Vec3d(COM(0), COM(1), COM(2)), osg::Vec3d(0, 0, 1));
                     _osg_viewer.home();
@@ -414,10 +410,6 @@ namespace rhex_dart {
 
                 if (update_ctrl){
                     _controller.update(_world->getTime());
-                }else{
-                    //std::cout << "Warning: want to 'set command' " << std::endl;
-                    //
-                    //_controller.set_commands();
                 }
                 _world->step();
                 if ((rob->pose() - prev_pose).norm() < 1e-4)
@@ -863,7 +855,7 @@ namespace rhex_dart {
             double pipe_x_width = 0.10;
             double pipe_y_width = 10;
             double pipe_z_width = 0.10;
-            double pipe_y_rotation = 1.57079632679 / 2; // 45 degrees rototation
+            double pipe_y_rotation = 0.78539816339; // 45 degrees rototation
 
             _add_floor(1, 20, 10);
 

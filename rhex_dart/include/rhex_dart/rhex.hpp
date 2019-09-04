@@ -37,9 +37,6 @@ namespace rhex_dart {
             // Set all coefficients to default values
             set_friction_coeff();
             set_restitution_coeff();
-
-            // auto jnt = _skeleton->getJoint("body_joint_1" );
-            // jnt->getForceUpperLimits();
         }
 
         Rhex(const std::string& model_file, const std::string& robot_name, bool is_urdf_string, std::vector<RhexDamage> damages) : Rhex(model_file, robot_name, std::vector<std::pair<std::string, std::string>>(), is_urdf_string, damages) {}
@@ -117,8 +114,6 @@ namespace rhex_dart {
             if (friction < 0.0)
                 return;
 
-//            std::cout << "Num body nodes: ";
-//            std::cout << _skeleton->getNumBodyNodes() << std::endl;
             for (size_t i = 0; i < _skeleton->getNumBodyNodes(); i++) {
                 auto bd = _skeleton->getBodyNode(i);
                 bd->setFrictionCoeff(friction);
@@ -176,8 +171,6 @@ namespace rhex_dart {
             if (model_file[0] != '/') {
                 constexpr size_t max_size = 512;
                 char buff[max_size];
-                // auto val = getcwd(buff, max_size);
-               // ROBOT_DART_ASSERT(val, "Something bad happenned when trying to read current path", nullptr);
                 model_file = std::string(buff) + "/" + model_file;
             }
 
