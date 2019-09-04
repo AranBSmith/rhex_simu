@@ -9,7 +9,7 @@
 
 #define PROP 15         // proportional gain
 #define INTEG 15        // integral gain
-#define DIFF 15         // differential gain
+#define DIFF 0          // differential gain
 
 #define CPG_SIZE 6      // no. outputs from the controller
 #define FORCE_LIMIT 4   // +- torque limit
@@ -51,7 +51,7 @@ namespace rhex_dart {
             _pid.clear();
             _pid.set_Kp(PROP);
             _pid.set_Ki(INTEG);
-            _pid.set_Kd(0);
+            _pid.set_Kd(DIFF);
 
             std::vector<double>::const_iterator first = ctrl.begin();
             std::vector<double>::const_iterator last = ctrl.begin() + ctrl.size();
@@ -79,18 +79,6 @@ namespace rhex_dart {
             
             Eigen::VectorXd current_positions = _robot->skeleton()->getPositions();
 
-//            std::cout<< "current positions: " ;
-//            for (size_t i = 0; i < _leg_count; ++i){
-//                std::cout << current_positions[i+6] << " ";
-//            }
-//            std::cout<<std::endl;
-
-//            std::cout<< "removed legs are: " ;
-//            for (size_t i = 0; i < _removed_legs.size(); ++i){
-//                std::cout << _removed_legs[i] << " ";
-//            }
-//            std::cout<<std::endl;
-
             std::vector<double> feedback(CPG_SIZE, 0);
             int skip_count = 0;
             for (size_t i = 0; i < CPG_SIZE; ++i)
@@ -106,18 +94,6 @@ namespace rhex_dart {
                     feedback[i] = current_positions[i + 6 - skip_count];
             }
 
-//            std::cout << "feedback/current positions: " ;
-//            for (size_t i = 0; i < CPG_SIZE; ++i){
-//               std::cout << feedback[i] << " ";
-//            }
-//            std::cout << std::endl;
-
-//            std::cout << "Target/cpg/setpoint positions: " ;
-//            for (size_t i = 0; i < 6; ++i){
-//                std::cout << _target_positions[i] << " ";
-//            }
-//            std::cout << std::endl;
-
             // if the target is one or more full rotations ahead, subtract the appropriate amount of rotations.
             // this needs to be sustained for the rest of the simulation as the signal will never decrease.
             for (size_t i = 0; i < CPG_SIZE; ++i)
@@ -126,8 +102,6 @@ namespace rhex_dart {
 
                 while(diff >= 2*PI)
                 {
-                    //std::cout << "hit first condition for: " << i << std::endl;
-
                     _compensatory_count[i] += 1;
                     diff = _target_positions[i] - 2 * PI * _compensatory_count[i] - feedback[i];
                 }
@@ -136,27 +110,10 @@ namespace rhex_dart {
 
                 // similarly, if the feedback is more than 2 PI ahead of the signal, we dont want the leg to wait
                 diff = feedback[i] - _target_positions[i];
-
-                // TODO: reasoning
                 if (diff > (3 * PI) / 2){
-                   // std::cout << "hit condition for: " << i << std::endl;
                     _target_positions[i] +=  2 * PI;
                 }
             }
-
-
-//            std::cout << "Target/cpg/setpoint positions: " ;
-//            for (size_t i = 0; i < 6; ++i){
-//                std::cout << _target_positions[i] << " ";
-//            }
-//            std::cout << std::endl;
-
-//            std::cout << "feedback/current positions: " ;
-
-//            for (size_t i = 0; i < CPG_SIZE; ++i){
-//                std::cout << feedback[i] << " ";
-//            }
-//            std::cout << std::endl;
 
             _pid.set_points(_target_positions);
             _pid.update(feedback, t);
@@ -197,13 +154,6 @@ namespace rhex_dart {
                     ++j;
                 }
             }
-
-//            std::cout << "Setting commands: ";
-//            for (size_t i = 0; i < _leg_count; ++i){
-//                std::cout << commands[i + CPG_SIZE] << " ";
-//            }
-//            std::cout << std::endl;
-
             _robot->skeleton()->setCommands(commands);
 
         }
