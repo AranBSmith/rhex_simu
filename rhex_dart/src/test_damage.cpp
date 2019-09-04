@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
     std::vector<rhex_dart::RhexDamage> damages(0);
 
-    assert(argc == 26);
+    assert(argc == 28);
     damages.push_back(rhex_dart::RhexDamage("leg_removal", "5"));
 	
 
@@ -32,8 +32,6 @@ int main(int argc, char** argv)
     auto global_robot = std::make_shared<rhex_dart::Rhex>(std::string(std::getenv("RESIBOTS_DIR")) + "/share/rhex_models/SKEL/" + argv[3], "Rhex", false, damages);
 
     // sets the control vector up
-    // ./waf && ./build/test 1 raised.skel 1 0.1 0 0.3 0.85 0.6 0 0.15 1 0.75 0.5 0.8
-    // ./build/test 1 1 raised.skel 0.775 1 1 0.925 0.975 0.975 0.025 0.175 0.7 0.15 0.875 0.125 0.125 1 0.5 0.25 0.825 0.325 0.3 0.6 1 0.05 0.725
     std::vector<double> ctrl = { atof(argv[4]), atof(argv[5]),
                                 atof(argv[6]), atof(argv[7]), atof(argv[8]),
                                 atof(argv[9]),atof(argv[10]),atof(argv[11]),
