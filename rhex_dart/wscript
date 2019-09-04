@@ -95,7 +95,6 @@ def build(bld):
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_control_cpg.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_control_hopf.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_control_buehler.hpp')
-    bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/rhex_control_roman.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/pid_control.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/safety_measures.hpp')
     bld.install_files('${PREFIX}/include/rhex_dart', 'include/rhex_dart/descriptors.hpp')
